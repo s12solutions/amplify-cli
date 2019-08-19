@@ -1,12 +1,12 @@
 import Context from './domain/context';
 import Input from './domain/input';
 import PluginPlatform from './domain/plugin-platform';
-import { attachGluegunExtentions } from './gluegun-helper';
+import { attachCliExtentions } from './cli-helper';
 
 export function constructContext(pluginPlatform: PluginPlatform, input: Input): Context {
     const context = new Context(pluginPlatform, input);
 
-    attachGluegunExtentions(context);
+    attachCliExtentions(context);
 
     return context;
 }

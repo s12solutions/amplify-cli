@@ -14,7 +14,7 @@ importedColors.setTheme({
     muted: 'grey',
 })
 
-type GluegunPrintColors = typeof importedColors & {
+type CliPrintColors = typeof importedColors & {
     highlight: (t: string) => string
     info: (t: string) => string
     warning: (t: string) => string
@@ -24,9 +24,9 @@ type GluegunPrintColors = typeof importedColors & {
     muted: (t: string) => string
 }
 
-const colors = importedColors as GluegunPrintColors;
+const colors = importedColors as CliPrintColors;
 
-export function attachGluegunExtentions(context: Context) {
+export function attachCliExtentions(context: Context) {
     attachFilesystem(context);
     attachPrint(context);
     attachParameters(context);
