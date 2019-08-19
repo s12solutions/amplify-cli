@@ -1,6 +1,8 @@
 const xrManager = require('./lib/xr-manager');
 const inquirer = require('inquirer');
+const path = require('path');
 
+const pluginName = 'xr';
 const SUMERIAN_SERVICE_NAME = 'Sumerian';
 const XR_CATEGORY_NAME = 'xr';
 
@@ -87,10 +89,27 @@ async function getPermissionPolicies(context, resourceOpsMapping) {
   return { permissionPolicies, resourceAttributes };
 }
 
+async function executeAmplifyCommand(context) {
+  let commandPath = path.normalize(path.join(__dirname, 'commands'));
+  if (context.input.command === 'help') {
+    commandPath = path.join(commandPath, pluginName);
+  } else {
+    commandPath = path.join(commandPath, pluginName, context.input.command);
+  }
+
+  const commandModule = require(commandPath);
+  await commandModule.run(context);
+}
+
+async function handleAmplifyEvent(context, args) {
+  console.log(`${pluginName} handleAmplifyEvent to be implmented`);
+  context.amplify.print.info(`Received event args ${args}`);
+}
 
 module.exports = {
   console,
   initEnv,
   getPermissionPolicies,
-  ...require('./amplify-plugin-index'),
+  executeAmplifyCommand,
+  handleAmplifyEvent,
 };

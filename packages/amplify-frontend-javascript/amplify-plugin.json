@@ -5,5 +5,5 @@
     "commands": [
         "help"
     ],
-    "subscriptions":[]
+    "eventHandlers": []
 }

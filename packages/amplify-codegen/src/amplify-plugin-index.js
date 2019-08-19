@@ -1,5 +1,5 @@
 const path = require('path'); 
-const pluginName = 'hosting';
+const pluginName = 'codegen';
 
 async function executeAmplifyCommand(context) {
     let commandPath = path.normalize(path.join(__dirname, 'commands')); 

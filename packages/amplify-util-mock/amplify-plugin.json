@@ -7,5 +7,5 @@
         "storage",
         "help"
     ],
-    "subscriptions":[]
+    "eventHandlers": []
 }

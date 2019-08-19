@@ -12,7 +12,7 @@
     "commandAliases":{
         "update": "configure"
     },
-    "subscriptions":[
+    "eventHandlers": [
         "PostPush",
         "NotHere"
     ]

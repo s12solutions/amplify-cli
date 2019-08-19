@@ -8,5 +8,5 @@
         "console",
         "help"
     ],
-    "subscriptions":[]
+    "eventHandlers": []
 }

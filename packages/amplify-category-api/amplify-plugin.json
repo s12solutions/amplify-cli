@@ -14,5 +14,5 @@
     "commandAliases":{
         "configure": "update"
     },
-    "subscriptions":[]
+    "eventHandlers": []
 }

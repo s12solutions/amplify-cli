@@ -1,9 +1,11 @@
+const path = require('path');
 const pinpointHelper = require('./lib/pinpoint-helper');
 const {
   migrate,
 } = require('./provider-utils/awscloudformation/service-walkthroughs/pinpoint-walkthrough');
 
 const category = 'analytics';
+const pluginName = 'analytics';
 
 function console(context) {
   pinpointHelper.console(context);
@@ -38,9 +40,27 @@ async function getPermissionPolicies(context, resourceOpsMapping) {
   return { permissionPolicies, resourceAttributes };
 }
 
+async function executeAmplifyCommand(context) {
+  let commandPath = path.normalize(path.join(__dirname, 'commands'));
+  if (context.input.command === 'help') {
+    commandPath = path.join(commandPath, pluginName);
+  } else {
+    commandPath = path.join(commandPath, pluginName, context.input.command);
+  }
+
+  const commandModule = require(commandPath);
+  await commandModule.run(context);
+}
+
+async function handleAmplifyEvent(context, args) {
+  console.log(`${pluginName} handleAmplifyEvent to be implmented`);
+  context.amplify.print.info(`Received event args ${args}`);
+}
+
 module.exports = {
   console,
   migrate,
   getPermissionPolicies,
-  ...require('./amplify-plugin-index'),
+  executeAmplifyCommand,
+  handleAmplifyEvent,
 };

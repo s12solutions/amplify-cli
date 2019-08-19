@@ -10,5 +10,5 @@
         "update",
         "help"
     ],
-    "subscriptions":[]
+    "eventHandlers": []
 }

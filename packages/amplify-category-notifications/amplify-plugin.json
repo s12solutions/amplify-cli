@@ -18,5 +18,5 @@
         "list": "status",
         "ls": "status"
     },
-    "subscriptions":[]
+    "eventHandlers": []
 }
