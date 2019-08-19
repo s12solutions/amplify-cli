@@ -49,5 +49,6 @@ async function console(context) {
 
 module.exports = {
   predictionsConsole, console,
+  ...require('./amplify-plugin-index'),
 };
 

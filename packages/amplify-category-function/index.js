@@ -145,4 +145,5 @@ module.exports = {
   getPermissionPolicies,
   invoke,
   invokeWalkthroughRun,
+  ...require('./amplify-plugin-index'),
 };

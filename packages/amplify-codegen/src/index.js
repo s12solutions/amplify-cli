@@ -21,4 +21,5 @@ module.exports = {
   postPushGraphQLCodegenHook,
   isCodegenConfigured,
   switchToSDLSchema,
+  ...require('../amplify-plugin-index'),
 };
