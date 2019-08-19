@@ -45,7 +45,8 @@ function verifyAmplifyManifest(pluginDirPath: string, pluginModule: any): Plugin
 
     try {
         const manifest = readJsonFile(pluginManifestFilePath) as PluginManifest;
-        const result = verifyCommands(manifest, pluginModule);
+        let result = verifyCommands(manifest, pluginModule);
+        result = result.verified ? verifyEventHandlers(manifest, pluginModule) : result; 
         result.manifest = manifest;
         return result;
     } catch (err) {
@@ -65,7 +66,7 @@ function verifyCommands(manifest: PluginManifest, pluginModule: any): PluginVeri
     }
 
     if (isVerified) {
-        return verifyEventHandlers(manifest, pluginModule);
+        return new PluginVerificationResult(true);
     } else {
         return new PluginVerificationResult(
             false,
