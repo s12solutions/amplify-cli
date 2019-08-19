@@ -1,4 +1,5 @@
 const path = require('path');
+
 const category = 'interactions';
 const pluginName = 'interactions';
 
