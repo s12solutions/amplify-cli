@@ -65,7 +65,7 @@ function verifyCommands(manifest: PluginManifest, pluginModule: any): PluginVeri
     }
 
     if (isVerified) {
-        return verifySubscriptions(manifest, pluginModule);
+        return verifyEventHandlers(manifest, pluginModule);
     } else {
         return new PluginVerificationResult(
             false,
@@ -74,9 +74,9 @@ function verifyCommands(manifest: PluginManifest, pluginModule: any): PluginVeri
     }
 }
 
-function verifySubscriptions(manifest: PluginManifest, pluginModule: any): PluginVerificationResult {
+function verifyEventHandlers(manifest: PluginManifest, pluginModule: any): PluginVerificationResult {
     let isVerified = true;
-    if (manifest.subscriptions && manifest.subscriptions.length > 0) {
+    if (manifest.eventHandlers && manifest.eventHandlers.length > 0) {
         isVerified = pluginModule.hasOwnProperty(constants.HandleAmplifyEvent) &&
         typeof pluginModule[constants.HandleAmplifyEvent] === 'function';
     }

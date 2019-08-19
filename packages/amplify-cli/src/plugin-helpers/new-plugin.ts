@@ -68,7 +68,7 @@ async function copyTemplateFiles(context: Context, pluginParentDirPath: string, 
         'util'
     ];
     let pluginType = pluginTypes[0];
-    let subscriptions = Object.keys(AmplifyEvent);
+    let eventHandlers = Object.keys(AmplifyEvent);
 
     if (!yesFlag) {
         const questions = [
@@ -81,20 +81,20 @@ async function copyTemplateFiles(context: Context, pluginParentDirPath: string, 
             },
             {
                 type: 'checkbox',
-                name: 'subscriptions',
+                name: 'eventHandlers',
                 message: 'What Amplify CLI events does the plugin subscribe to?',
-                choices: subscriptions,
-                default: subscriptions
+                choices: eventHandlers,
+                default: eventHandlers
             }
         ];
         let answers = await inquirer.prompt(questions);
         pluginType = answers.pluginType;
-        subscriptions = answers.subscriptions;
+        eventHandlers = answers.eventHandlers;
     }
 
     updatePackageJson(pluginDirPath, pluginName);
-    updateAmplifyPluginJson(pluginDirPath, pluginName, pluginType, subscriptions);
-    updateEventHandlersFolder(pluginDirPath, subscriptions);
+    updateAmplifyPluginJson(pluginDirPath, pluginName, pluginType, eventHandlers);
+    updateEventHandlersFolder(pluginDirPath, eventHandlers);
 
     return pluginDirPath;
 }
@@ -111,27 +111,27 @@ function updateAmplifyPluginJson(
     pluginDirPath: string,
     pluginName: string,
     pluginType: string,
-    subscriptions: string[]
+    eventHandlers: string[]
 ): void {
     const filePath = path.join(pluginDirPath, constants.MANIFEST_FILE_NAME);
     const amplifyPluginJson = readJsonFile(filePath);
     amplifyPluginJson.name = pluginName;
     amplifyPluginJson.type = pluginType;
-    amplifyPluginJson.subscriptions = subscriptions;
+    amplifyPluginJson.eventHandlers = eventHandlers;
     const jsonString = JSON.stringify(amplifyPluginJson, null, 4);
     fs.writeFileSync(filePath, jsonString, 'utf8');
 }
 
 function updateEventHandlersFolder(
     pluginDirPath: string,
-    subscriptions: string[]
+    eventHandlers: string[]
 ): void {
     const dirPath = path.join(pluginDirPath, 'event-handlers');
     const fileNames = fs.readdirSync(dirPath);
 
     fileNames.forEach((fileName) => {
         const eventName = fileName.replace('handle-', '').split('.')[0];
-        if (!subscriptions.includes(eventName)) {
+        if (!eventHandlers.includes(eventName)) {
             fs.removeSync(path.join(dirPath, fileName));
         }
     })

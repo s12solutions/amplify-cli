@@ -62,7 +62,7 @@ function showAllHelp(context) {
     },
     {
       name: 'codegen',
-      description: 'Generates GraphQL statements(queries, mutations and subscriptions) and type annotations.',
+      description: 'Generates GraphQL statements(queries, mutations and eventHandlers) and type annotations.',
     },
     {
       name: 'env',

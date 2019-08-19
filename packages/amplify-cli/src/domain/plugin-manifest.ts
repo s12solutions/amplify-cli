@@ -9,6 +9,6 @@ export default class PluginManifest {
         public commandAliases?: {
             [key: string]: string
         },
-        public subscriptions?: AmplifyEvent[]) {
+        public eventHandlers?: AmplifyEvent[]) {
     }
 }

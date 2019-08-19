@@ -57,8 +57,8 @@ function printInfo(context: Context, pluginDirPath: string, isPluggedInLocalAmpl
     context.print.info('2. Add/remove the command code file in the commands folder.');
 
     context.print.info('');
-    context.print.info('To add/remove subscriptions:');
-    context.print.info('1. Add/remove the event name in the subscriptions array in amplify-plugin.json.');
+    context.print.info('To add/remove eventHandlers:');
+    context.print.info('1. Add/remove the event name in the eventHandlers array in amplify-plugin.json.');
     context.print.info('2. Add/remove the event handler code file into the event-handler folder.');
     context.print.info('');
 }
