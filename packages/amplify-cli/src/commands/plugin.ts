@@ -8,7 +8,7 @@ import verify from './plugin/verify';
 import help from './plugin/help';
 import Context from '../domain/context';
 
-export default async function plugin(context: Context) {
+export async function run(context: Context) {
     let subcommand = 'help'; 
 
     if(context.input.subCommands && context.input.subCommands.length > 0){

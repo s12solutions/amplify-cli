@@ -6,6 +6,7 @@ import verifyPlugin from './plugin-helpers/verify-plugin';
 import newPlugin from './plugin-helpers/new-plugin';
 import AddPluginResult, { AddPluginError } from './domain/add-plugin-result';
 import { twoPluginsAreTheSame } from './plugin-helpers/compare-plugins';
+import { AmplifyEvent } from './domain/amplify-event'; 
 
 export function getPluginPlatform(): PluginPlatform {
     //This function is called at the beginning of each command execution
@@ -70,6 +71,24 @@ export function getPluginsWithNameAndCommand(
                     (commandAliases && Object.keys(commandAliases).includes(command))) {
                     result.push(pluginInfo);
                 }
+            }
+        })
+    });
+
+    return result;
+}
+
+export function getPluginsWithEventHandler(
+    pluginPlatform: PluginPlatform,
+    event: AmplifyEvent
+): Array<PluginInfo> {
+    let result = new Array<PluginInfo>();
+
+    Object.keys(pluginPlatform.plugins).forEach((pluginName) => {
+        pluginPlatform.plugins[pluginName].forEach((pluginInfo) => {
+            const { eventHandlers } = pluginInfo.manifest;
+            if(eventHandlers && eventHandlers.length > 0 && eventHandlers.includes(event)){
+                result.push(pluginInfo);
             }
         })
     });

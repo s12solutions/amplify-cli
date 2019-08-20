@@ -1,12 +1,9 @@
 import Context from '../../domain/context';
 import PluginPlatform from '../../domain/plugin-platform';
-import { getPluginPlatform, scan } from '../../plugin-manager';
-import inquirer, {InquirerOption, EXPAND } from '../../domain/inquirer-helper';
+import inquirer from '../../domain/inquirer-helper';
 import util from 'util';
 import Constants from '../../domain/constants';
 import fs from 'fs-extra';
-import { strict } from 'assert';
-import plugin from '../plugin';
 
 export default async function configure(context: Context): Promise<PluginPlatform> {
     const { pluginPlatform } = context;
