@@ -1,7 +1,9 @@
 import Context from '../../domain/context';
-import { removePluginPackage } from '../../plugin-manager';
+import { removePluginPackage, confirmAndScan } from '../../plugin-manager';
+import PluginPlatform from '../../domain/plugin-platform';
 import Constant from '../../domain/constants';
 import inquirer, {InquirerOption, EXPAND } from '../../domain/inquirer-helper';
+import PluginInfo from '../../domain/plugin-info';
 
 export default async function remove(context: Context) {
     const options = new Array<InquirerOption>();
@@ -32,14 +34,54 @@ export default async function remove(context: Context) {
     }
 
     if (options.length > 0) {
-        const answer = await inquirer.prompt({
-            type: 'list',
-            name: 'selection',
-            message: 'Select the plugin package to remove',
+        const { selections } = await inquirer.prompt({
+            type: 'checkbox',
+            name: 'selections',
+            message: 'Select the plugin packages to remove',
             choices: options
         });
-        await removePluginPackage(context.pluginPlatform, answer.selection[0]);
+
+        if(selections.length > 0){
+            const sequential = require('promise-sequential'); 
+            const removeTasks = selections.map((selection: Array<PluginInfo>) => {
+                return async () => {
+                    await removeNamedPlugins(context.pluginPlatform, selection);
+                };
+            });
+            await sequential(removeTasks); 
+            await confirmAndScan(context.pluginPlatform); 
+        }
     } else {
         context.print.console.error('No plugins are found');
+    }
+}
+
+async function removeNamedPlugins(pluginPlatform: PluginPlatform, pluginInfos: Array<PluginInfo>){
+    if(pluginInfos.length === 1){
+        removePluginPackage(pluginPlatform, pluginInfos[0]);
+    }else if(pluginInfos.length > 1){
+        const options = pluginInfos.map((pluginInfo: PluginInfo)=>{
+            return {
+                name: pluginInfo.packageName + '@' + pluginInfo.packageVersion,
+                value: pluginInfo,
+                short: pluginInfo.packageName + '@' + pluginInfo.packageVersion,
+            }
+        });
+        const { selections } = await inquirer.prompt({
+            type: 'checkbox',
+            name: 'selections',
+            message: 'Select the plugin packages to remove',
+            choices: options
+        });
+
+        if(selections.length > 0){
+            const sequential = require('promise-sequential'); 
+            const removeTasks = selections.map((pluginInfo: PluginInfo) => {
+                return async () => {
+                    await removePluginPackage(pluginPlatform, pluginInfo);
+                };
+            });
+            await sequential(removeTasks); 
+        }
     }
 }

@@ -20,7 +20,6 @@ async function getPluginName(context: Context, pluginParentDirPath: string): Pro
     let pluginName = 'myAmplifyCliPlugin';
     const yesFlag = context.input.options && context.input.options[Constant.YES];
 
-    console.log(context.input); 
     if (context.input.subCommands!.length > 1) { //subcommands: ['new', 'name']
         pluginName = context.input.subCommands![1];
     } else if (!yesFlag) {

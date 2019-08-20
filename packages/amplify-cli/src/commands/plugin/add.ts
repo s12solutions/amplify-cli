@@ -2,7 +2,11 @@ import Context from '../../domain/context';
 import os from 'os';
 import fs from 'fs-extra';
 import PluginInfo from '../../domain/plugin-info';
-import { addUserPluginPackage, addExcludedPluginPackage as addFromExcluded } from '../../plugin-manager';
+import { 
+    addUserPluginPackage, 
+    addExcludedPluginPackage as addFromExcluded,
+    confirmAndScan 
+} from '../../plugin-manager';
 import inquirer, {InquirerOption, EXPAND } from '../../domain/inquirer-helper';
 
 const NEWPLUGINPACKAGE = 'A new plugin package';
@@ -69,6 +73,7 @@ async function addNewPluginPackage(context: Context) {
         const addUserPluginResult = addUserPluginPackage(context.pluginPlatform, answer.pluginDirPath);
         if (addUserPluginResult.isAdded) {
             context.print.success('Successfully added plugin package.');
+            await confirmAndScan(context.pluginPlatform);
         } else {
             context.print.error(addUserPluginResult.error);
         }
@@ -101,5 +106,6 @@ async function addExcludedPluginPackage(context: Context, userSelection: PluginI
 
             addFromExcluded(context.pluginPlatform, answer.selection);
         }
+        await confirmAndScan(context.pluginPlatform);
     }
 }

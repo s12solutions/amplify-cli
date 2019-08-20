@@ -7,6 +7,7 @@ import newPlugin from './plugin-helpers/new-plugin';
 import AddPluginResult, { AddPluginError } from './domain/add-plugin-result';
 import { twoPluginsAreTheSame } from './plugin-helpers/compare-plugins';
 import { AmplifyEvent } from './domain/amplify-event'; 
+import inquirer from './domain/inquirer-helper';
 
 export function getPluginPlatform(): PluginPlatform {
     //This function is called at the beginning of each command execution
@@ -121,6 +122,18 @@ export { verifyPlugin };
 
 export { newPlugin };
 
+export async function confirmAndScan(pluginPlatform: PluginPlatform){
+    const { confirmed } = await inquirer.prompt({
+        type: 'confirm',
+        name: 'confirmed',
+        message: 'Run a fresh scan for plugins on the Amplify CLI pluggable platform',
+        default: false
+    });
+    if(confirmed){
+        await scanPluginPlatform(pluginPlatform);
+    }
+}
+
 export function addUserPluginPackage(
     pluginPlatform: PluginPlatform,
     pluginDirPath: string
@@ -133,7 +146,6 @@ export function addUserPluginPackage(
             result.error = AddPluginError.UserPluginAlreadyAdded;
         } else if (!isUnderScanCoverage(pluginPlatform, pluginDirPath)) {
             pluginPlatform.userAddedLocations.push(pluginDirPath);
-            scanPluginPlatform(pluginPlatform);
             result.isAdded = true;
         }
     } else {
@@ -160,8 +172,6 @@ export function addExcludedPluginPackage(
         } else {
             delete pluginPlatform.excluded[pluginInfo.manifest.name];
         }
-
-        scanPluginPlatform(pluginPlatform);
         result.isAdded = true;
     } else {
         result.error = AddPluginError.FailedVerification;
@@ -206,7 +216,5 @@ export function removePluginPackage(
             pluginPlatform.excluded[pluginInfo.manifest.name] || [];
         pluginPlatform.excluded[pluginInfo.manifest.name].push(pluginInfo);
     }
-
-    scanPluginPlatform(pluginPlatform);
 }
 

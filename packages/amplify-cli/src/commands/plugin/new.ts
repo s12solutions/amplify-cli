@@ -2,7 +2,7 @@ import Context from '../../domain/context';
 import Constant from '../../domain/constants';
 import { newPlugin } from '../../plugin-manager';
 import inquirer from '../../domain/inquirer-helper';
-import { addUserPluginPackage } from '../../plugin-manager';
+import { addUserPluginPackage, confirmAndScan } from '../../plugin-manager';
 import path from 'path';
 
 export default async function newplugin(context: Context) {
@@ -36,6 +36,7 @@ async function plugIntoLocalAmplifyCli(context: Context, pluginDirPath: string):
         const addPluginResult = addUserPluginPackage(context.pluginPlatform, pluginDirPath);
         if (addPluginResult.isAdded) {
             isPluggedIn = true;
+            await confirmAndScan(context.pluginPlatform);
         } else {
             context.print.error(addPluginResult.error);
         }

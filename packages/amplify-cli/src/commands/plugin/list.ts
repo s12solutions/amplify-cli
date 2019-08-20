@@ -1,6 +1,6 @@
 import Context from '../../domain/context';
 import PluginPlatform from '../../domain/plugin-platform';
-import inquirer, {InquirerOption, EXPAND } from '../../domain/inquirer-helper';
+import inquirer from '../../domain/inquirer-helper';
 import { listConfiguration } from './configure';
 import util from 'util';
 import PluginCollection from '../../domain/plugin-collection';
