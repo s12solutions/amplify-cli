@@ -1,7 +1,7 @@
-const importedColors = require('colors/safe');
+const colors = require('colors/safe');
 const CLITable = require('cli-table3');
 
-importedColors.setTheme({
+colors.setTheme({
     highlight: 'cyan',
     info: 'reset',
     warning: 'yellow',
@@ -10,7 +10,6 @@ importedColors.setTheme({
     line: 'grey',
     muted: 'grey',
 })
-
 
 function info(message) {
     console.log(colors.info(message))
