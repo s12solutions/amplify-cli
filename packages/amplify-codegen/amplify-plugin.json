@@ -12,8 +12,5 @@
     "commandAliases":{
         "update": "configure"
     },
-    "eventHandlers": [
-        "PostPush",
-        "NotHere"
-    ]
+    "eventHandlers": []
 }
