@@ -59,7 +59,6 @@ async function raisePreEvent(context: Context){
 }
 
 async function raisePreInitEvent(context: Context){
-    console.log('in／／／／／／／／raisePreInitEvent')
     await raiseEvent(context, new AmplifyEventArgs(
         AmplifyEvent.PreInit,
         new AmplifyPreInitEventData()
@@ -67,7 +66,6 @@ async function raisePreInitEvent(context: Context){
 }
 
 async function raisePrePushEvent(context: Context){
-    console.log('in／／／／／／／／raisePrePushEvent')
     await raiseEvent(context, new AmplifyEventArgs(
         AmplifyEvent.PrePush,
         new AmplifyPrePushEventData()
@@ -85,7 +83,6 @@ async function raisePostEvent(context: Context){
 }
 
 async function raisePostInitEvent(context: Context){
-    console.log('in／／／／／／／／raisePostInitEvent')
     await raiseEvent(context, new AmplifyEventArgs(
         AmplifyEvent.PostInit,
         new AmplifyPostPushEventData()
@@ -93,7 +90,6 @@ async function raisePostInitEvent(context: Context){
 }
 
 async function raisePostPushEvent(context: Context){ 
-    console.log('in／／／／／／／／raisePostPushEvent')
     await raiseEvent(context, new AmplifyEventArgs(
         AmplifyEvent.PostPush,
         new AmplifyPostInitEventData()
