@@ -53,7 +53,7 @@ async function run(context) {
 
   printWelcomeMessage();
   // Exit the process with a success code
-  process.exit(0);
+  // process.exit(0);
 }
 
 function generateLocalRuntimeFiles(context) {
