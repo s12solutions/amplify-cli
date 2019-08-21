@@ -24,6 +24,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@types/global-prefix": "^3.0.0",
+    "@types/ora": "^3.2.0",
     "amplify-category-analytics": "1.9.0",
     "amplify-category-api": "1.11.0",
     "amplify-category-auth": "1.11.0",

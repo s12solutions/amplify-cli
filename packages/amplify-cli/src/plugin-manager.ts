@@ -1,3 +1,4 @@
+import ora from 'ora'; 
 import PluginPlatform from './domain/plugin-platform';
 import PluginInfo from './domain/plugin-info';
 import { readPluginsJsonFile, writePluginsJsonFile } from './plugin-helpers/access-plugins-file';
@@ -9,7 +10,7 @@ import { twoPluginsAreTheSame } from './plugin-helpers/compare-plugins';
 import { AmplifyEvent } from './domain/amplify-event'; 
 import inquirer from './domain/inquirer-helper';
 
-export function getPluginPlatform(): PluginPlatform {
+export async function getPluginPlatform(): Promise<PluginPlatform> {
     //This function is called at the beginning of each command execution
     //and performs the following actions:
     //1. read the plugins.json file
@@ -23,10 +24,10 @@ export function getPluginPlatform(): PluginPlatform {
         const currentTime = new Date();
         const timeDiffInSeconds = (currentTime.getTime() - lastScanTime.getTime()) / 1000;
         if (timeDiffInSeconds > pluginPlatform.maxScanIntervalInSeconds) {
-            pluginPlatform = scanPluginPlatform();
+            pluginPlatform = await scan();
         }
     } else {
-        pluginPlatform = scanPluginPlatform();
+        pluginPlatform = await scan();
     }
 
     return pluginPlatform;
@@ -116,7 +117,20 @@ export function getAllPluginNames(pluginPlatform: PluginPlatform): Set<string> {
     return result;
 }
 
-export { scanPluginPlatform as scan };
+export async function scan(pluginPlatform?: PluginPlatform): Promise<PluginPlatform> {
+    const spinner = ora('Scan the Amplify CLI platform for plugins'); 
+    spinner.start();
+    return new Promise((resolve, reject)=>{
+        try{
+            const result = scanPluginPlatform(pluginPlatform); 
+            spinner.succeed('Amplify CLI platform scan successful.');
+            resolve (result); 
+        }catch(e){
+            spinner.fail('Amplify CLI platform scan failed.');
+            reject(e);
+        }
+    })
+}
 
 export { verifyPlugin };
 
@@ -130,7 +144,7 @@ export async function confirmAndScan(pluginPlatform: PluginPlatform){
         default: false
     });
     if(confirmed){
-        await scanPluginPlatform(pluginPlatform);
+        await scan(pluginPlatform);
     }
 }
 

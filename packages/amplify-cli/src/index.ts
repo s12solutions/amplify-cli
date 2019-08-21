@@ -9,12 +9,12 @@ import * as path from 'path';
 //entry from commandline
 export async function run() : Promise<number> {
     try {
-        let pluginPlatform = getPluginPlatform();
+        let pluginPlatform = await getPluginPlatform();
         let input = getCommandLineInput(pluginPlatform);
         let verificationResult = verifyInput(pluginPlatform, input);
 
         if (!verificationResult.verified) {
-            pluginPlatform = scan();
+            pluginPlatform = await scan();
             input = getCommandLineInput(pluginPlatform);
             verificationResult = verifyInput(pluginPlatform, input);
             if (!verificationResult.verified) {
@@ -36,11 +36,11 @@ export async function run() : Promise<number> {
 //entry from library call
 export async function execute(input: Input) {
     try {
-        let pluginPlatform = getPluginPlatform();
+        let pluginPlatform = await getPluginPlatform();
         let verificationResult = verifyInput(pluginPlatform, input);
 
         if (!verificationResult.verified) {
-            pluginPlatform = scan();
+            pluginPlatform = await scan();
             verificationResult = verifyInput(pluginPlatform, input);
             if (!verificationResult.verified) {
                 throw new Error(verificationResult.message);
