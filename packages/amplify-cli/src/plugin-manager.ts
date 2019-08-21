@@ -1,6 +1,6 @@
 import PluginPlatform from './domain/plugin-platform';
 import PluginInfo from './domain/plugin-info';
-import { readPluginsJsonFile } from './plugin-helpers/access-plugins-file';
+import { readPluginsJsonFile, writePluginsJsonFile } from './plugin-helpers/access-plugins-file';
 import scanPluginPlatform, { isUnderScanCoverage } from './plugin-helpers/scan-plugin-platform';
 import verifyPlugin from './plugin-helpers/verify-plugin';
 import newPlugin from './plugin-helpers/new-plugin';
@@ -144,8 +144,33 @@ export function addUserPluginPackage(
     if (pluginVerificationResult.verified) {
         if (pluginPlatform.userAddedLocations.includes(pluginDirPath)) {
             result.error = AddPluginError.UserPluginAlreadyAdded;
-        } else if (!isUnderScanCoverage(pluginPlatform, pluginDirPath)) {
-            pluginPlatform.userAddedLocations.push(pluginDirPath);
+        } else {
+            const { packageJson, manifest } = pluginVerificationResult; 
+            const pluginInfo = new PluginInfo(
+                packageJson.name,
+                packageJson.version,
+                pluginDirPath,
+                manifest!
+            );
+
+            const updatedPlugins = new Array<PluginInfo>();
+           
+            if(pluginPlatform.plugins[pluginInfo.manifest.name] && 
+            pluginPlatform.plugins[pluginInfo.manifest.name].length > 0){
+                pluginPlatform.plugins[pluginInfo.manifest.name].forEach((pluginInfoItem) => {
+                    if (!twoPluginsAreTheSame(pluginInfoItem, pluginInfo)) {
+                        updatedPlugins.push(pluginInfoItem);
+                    }
+                })
+            }
+            updatedPlugins.push(pluginInfo);
+            pluginPlatform.plugins[pluginInfo.manifest.name] = updatedPlugins;
+        
+            if (!isUnderScanCoverage(pluginPlatform, pluginDirPath)) {
+                pluginPlatform.userAddedLocations.push(pluginDirPath);
+            }
+
+            writePluginsJsonFile(pluginPlatform);
             result.isAdded = true;
         }
     } else {
@@ -161,17 +186,34 @@ export function addExcludedPluginPackage(
     const pluginVerificationResult = verifyPlugin(pluginInfo.packageLocation);
     const result = new AddPluginResult(false, pluginVerificationResult);
     if (pluginVerificationResult.verified) {
-        const updatedPlugins = new Array<PluginInfo>();
+        const updatedExcluded = new Array<PluginInfo>();
         pluginPlatform.excluded[pluginInfo.manifest.name].forEach((pluginInfoItem) => {
             if (!twoPluginsAreTheSame(pluginInfoItem, pluginInfo)) {
-                updatedPlugins.push(pluginInfoItem);
+                updatedExcluded.push(pluginInfoItem);
             }
         })
-        if (updatedPlugins.length > 0) {
-            pluginPlatform.excluded[pluginInfo.manifest.name] = updatedPlugins;
+        if (updatedExcluded.length > 0) {
+            pluginPlatform.excluded[pluginInfo.manifest.name] = updatedExcluded;
         } else {
             delete pluginPlatform.excluded[pluginInfo.manifest.name];
         }
+
+        const updatedPlugins = new Array<PluginInfo>();
+        if(pluginPlatform.plugins[pluginInfo.manifest.name] && 
+        pluginPlatform.plugins[pluginInfo.manifest.name].length > 0){
+            pluginPlatform.plugins[pluginInfo.manifest.name].forEach((pluginInfoItem) => {
+                if (!twoPluginsAreTheSame(pluginInfoItem, pluginInfo)) {
+                    updatedPlugins.push(pluginInfoItem);
+                }
+            })
+        }
+        updatedPlugins.push(pluginInfo);
+        pluginPlatform.plugins[pluginInfo.manifest.name] = updatedPlugins;
+
+        if (!isUnderScanCoverage(pluginPlatform, pluginInfo.packageLocation)){
+            pluginPlatform.userAddedLocations.push(pluginInfo.packageLocation);
+        }
+        writePluginsJsonFile(pluginPlatform);
         result.isAdded = true;
     } else {
         result.error = AddPluginError.FailedVerification;
@@ -187,16 +229,19 @@ export function removePluginPackage(
     pluginInfo: PluginInfo
 ): void {
     //remove from the plugins
-    const updatedPlugins = new Array<PluginInfo>();
-    pluginPlatform.plugins[pluginInfo.manifest.name].forEach((pluginInfoItem) => {
-        if (!twoPluginsAreTheSame(pluginInfoItem, pluginInfo)) {
-            updatedPlugins.push(pluginInfoItem);
+    if(pluginPlatform.plugins[pluginInfo.manifest.name] && 
+    pluginPlatform.plugins[pluginInfo.manifest.name].length > 0){
+        const updatedPlugins = new Array<PluginInfo>();
+        pluginPlatform.plugins[pluginInfo.manifest.name].forEach((pluginInfoItem) => {
+            if (!twoPluginsAreTheSame(pluginInfoItem, pluginInfo)) {
+                updatedPlugins.push(pluginInfoItem);
+            }
+        })
+        if (updatedPlugins.length > 0) {
+            pluginPlatform.plugins[pluginInfo.manifest.name] = updatedPlugins;
+        } else {
+            delete pluginPlatform.plugins[pluginInfo.manifest.name];
         }
-    })
-    if (updatedPlugins.length > 0) {
-        pluginPlatform.plugins[pluginInfo.manifest.name] = updatedPlugins;
-    } else {
-        delete pluginPlatform.plugins[pluginInfo.manifest.name];
     }
 
     //remove from the userAddedLocations
@@ -216,5 +261,6 @@ export function removePluginPackage(
             pluginPlatform.excluded[pluginInfo.manifest.name] || [];
         pluginPlatform.excluded[pluginInfo.manifest.name].push(pluginInfo);
     }
+    writePluginsJsonFile(pluginPlatform);
 }
 
