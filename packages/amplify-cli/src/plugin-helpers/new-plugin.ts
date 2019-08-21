@@ -6,6 +6,7 @@ import Constant from '../domain/constants'
 import { AmplifyEvent } from '../domain/amplify-event';
 import readJsonFile from '../utils/readJsonFile';
 import constants from '../domain/constants';
+import { validPluginName } from './verify-plugin'; 
 
 export default async function newPlugin(context: Context, pluginParentDirPath: string): Promise<string | undefined>  {
     const pluginName = await getPluginName(context, pluginParentDirPath);
@@ -27,7 +28,14 @@ async function getPluginName(context: Context, pluginParentDirPath: string): Pro
             type: 'input',
             name: 'pluginName',
             message: 'What should be the name of the plugin:',
-            default: pluginName
+            default: pluginName,
+            validate: (input : string) => {
+                const pluginNameValidationResult = validPluginName(input); 
+                if(!pluginNameValidationResult.isValid){
+                    return pluginNameValidationResult.message || 'Invalid plugin name'
+                }
+                return true;
+            }
         };
         const answer = await inquirer.prompt(pluginNameQuestion);
         pluginName = answer.pluginName;
@@ -52,6 +60,7 @@ async function getPluginName(context: Context, pluginParentDirPath: string): Pro
     }
     return pluginName;
 }
+
 
 async function copyTemplateFiles(context: Context, pluginParentDirPath: string, pluginName: string) {
     const yesFlag = context.input.options && context.input.options[Constant.YES];

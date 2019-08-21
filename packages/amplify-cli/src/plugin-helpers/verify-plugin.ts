@@ -17,6 +17,24 @@ export default function verifyPlugin(pluginDirPath: string): PluginVerificationR
     }
 }
 
+export type PluginNameValidationResult = {
+    isValid: boolean, 
+    message?: string
+} 
+
+export function validPluginName(pluginName: string): PluginNameValidationResult
+{
+    const result: PluginNameValidationResult = {
+        isValid: true
+    }; 
+    const corePluginJson = readJsonFile(path.normalize(path.join(__dirname, '../../amplify-plugin.json'))); 
+    if(corePluginJson && corePluginJson.commands && corePluginJson.commands.includes(pluginName)){
+        result.isValid = false; 
+        result.message = "Amplify CLI core comand names can not be used as plugin name"
+    }
+    return result; 
+}
+
 function verifyNodePackage(pluginDirPath: string): PluginVerificationResult {
     const pluginPackageJsonFilePath = path.join(pluginDirPath, constants.PACKAGEJSON_FILE_NAME);
     try {
@@ -45,10 +63,19 @@ function verifyAmplifyManifest(pluginDirPath: string, pluginModule: any): Plugin
 
     try {
         const manifest = readJsonFile(pluginManifestFilePath) as PluginManifest;
-        let result = verifyCommands(manifest, pluginModule);
-        result = result.verified ? verifyEventHandlers(manifest, pluginModule) : result; 
-        result.manifest = manifest;
-        return result;
+        let pluginNameValidationResult = validPluginName(manifest.name); 
+        if(pluginNameValidationResult.isValid){
+            let result = verifyCommands(manifest, pluginModule);
+            result = result.verified ? verifyEventHandlers(manifest, pluginModule) : result; 
+            result.manifest = manifest;
+            return result;
+        }else{
+            return new PluginVerificationResult(
+                false,
+                PluginVerificationError.InvalidManifest,
+                pluginNameValidationResult.message
+            );
+        }
     } catch (err) {
         return new PluginVerificationResult(
             false,

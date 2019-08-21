@@ -61,7 +61,11 @@ async function addNewPluginPackage(context: Context) {
         type: 'input',
         name: 'pluginDirPath',
         message: `Enter the full path of the plugin package: ${os.EOL}`,
+        transformer: (pluginDirPath: string) => {
+            return pluginDirPath.trim(); 
+        },
         validate: (pluginDirPath: string) => {
+            pluginDirPath = pluginDirPath.trim(); 
             if (fs.existsSync(pluginDirPath) && fs.statSync(pluginDirPath).isDirectory()) {
                 return true;
             }
