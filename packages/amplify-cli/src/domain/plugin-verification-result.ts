@@ -11,10 +11,10 @@ export default class PluginVerificationResult {
 }
 
 export enum PluginVerificationError {
-    PluginDirPathNotExist,
-    InvalidNodePackage,
-    MissingManifest,
-    InvalidManifest,
-    MissingExecuteAmplifyCommandMethod,
-    MissingHandleAmplifyEventMethod
+    PluginDirPathNotExist = "PluginDirPathNotExist",
+    InvalidNodePackage = "InvalidNodePackage",
+    MissingManifest = "MissingManifest",
+    InvalidManifest = "InvalidManifest",
+    MissingExecuteAmplifyCommandMethod = "MissingExecuteAmplifyCommandMethod",
+    MissingHandleAmplifyEventMethod = "MissingHandleAmplifyEventMethod"
 }

@@ -8,6 +8,7 @@ import PluginManifest from '../domain/plugin-manifest';
 import PluginInfo from '../domain/plugin-info';
 import verifyPlugin from './verify-plugin';
 import {readPluginsJsonFile, writePluginsJsonFile} from './access-plugins-file';
+import { twoPluginsAreTheSame } from './compare-plugins'; 
 import isChildPath from '../utils/is-child-path';
 
 export default function scanPluginPlatform(pluginPlatform?: PluginPlatform): PluginPlatform {
@@ -73,7 +74,12 @@ function verifyAndAdd(pluginPlatform: PluginPlatform, pluginDirPath: string) {
         pluginPlatform.plugins[manifest.name] =
             pluginPlatform.plugins[manifest.name] || [];
         const pluginInfo = new PluginInfo(name, version, pluginDirPath, manifest);
-        pluginPlatform.plugins[manifest.name].push(pluginInfo);
+
+        const pluginAlreadyAdded = pluginPlatform.plugins[manifest.name].some((item) => twoPluginsAreTheSame(item, pluginInfo));
+
+        if(!pluginAlreadyAdded){
+            pluginPlatform.plugins[manifest.name].push(pluginInfo);
+        }
     }
 }
 

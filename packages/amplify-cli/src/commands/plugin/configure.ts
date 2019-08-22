@@ -1,9 +1,11 @@
+import fs from 'fs-extra';
+import util from 'util';
+
 import Context from '../../domain/context';
 import PluginPlatform from '../../domain/plugin-platform';
 import inquirer from '../../domain/inquirer-helper';
-import util from 'util';
 import Constants from '../../domain/constants';
-import fs from 'fs-extra';
+import { writePluginsJsonFile } from '../../plugin-helpers/access-plugins-file';
 
 export default async function configure(context: Context): Promise<PluginPlatform> {
     const { pluginPlatform } = context;
@@ -43,8 +45,9 @@ export default async function configure(context: Context): Promise<PluginPlatfor
         }
     } while (answer.selection !== exit);
 
+    writePluginsJsonFile(pluginPlatform);
+    
     return Promise.resolve(pluginPlatform);
-    // return await scan(pluginPlatform);
 }
 
 async function configurePluginDirectories(pluginPlatform: PluginPlatform) {

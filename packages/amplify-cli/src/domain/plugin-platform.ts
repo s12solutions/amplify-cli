@@ -4,9 +4,9 @@ import constants from './constants';
 export default class PluginPlatform {
     constructor() {
         this.pluginDirectories = [
-            // constants.LocalNodeModules,
+            constants.LocalNodeModules,
             constants.ParentDirectory,
-            // constants.GlobalNodeModules
+            constants.GlobalNodeModules
         ];
         this.pluginPrefixes = [
             constants.AmplifyPrefix
@@ -16,7 +16,6 @@ export default class PluginPlatform {
         this.maxScanIntervalInSeconds = 86400;
         this.plugins = new PluginCollection();
         this.excluded = new PluginCollection();
-        // this.aliasMappings = new PluginCollection();
     };
 
     pluginDirectories: string[];
@@ -26,5 +25,4 @@ export default class PluginPlatform {
     maxScanIntervalInSeconds: number;
     plugins: PluginCollection;
     excluded: PluginCollection;
-    // aliasMappings: PluginCollection;
 }
