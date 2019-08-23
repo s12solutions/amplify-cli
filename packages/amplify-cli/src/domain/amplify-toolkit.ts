@@ -66,8 +66,8 @@ export default class AmplifyToolkit {
     private _getTriggerEnvVariables: any;
     private _getTriggerEnvInputs: any;
 
-    private _amplifyHelpersDirPath: string = //this will eventually be moved inside this new core package
-        path.join(__dirname, '../../../amplify-cli/src/extensions/amplify-helpers');
+    private _amplifyHelpersDirPath: string = 
+        path.normalize(path.join(__dirname, '../extensions/amplify-helpers'));
 
     get buildResources(): any {
         this._buildResources = this._buildResources ||
