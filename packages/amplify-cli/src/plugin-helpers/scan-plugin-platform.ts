@@ -44,7 +44,7 @@ export default function scanPluginPlatform(pluginPlatform?: PluginPlatform): Plu
 function normalizePluginDirectory(directory: string): string {
     let result = directory;
     if (directory === constants.LocalNodeModules) {
-        result = path.normalize(path.join(__dirname, '../node_modules'));
+        result = path.normalize(path.join(__dirname, '../../node_modules'));
     } else if (directory === constants.ParentDirectory) {
         result = path.normalize(path.join(__dirname, '../../../'));
     } else if (directory === constants.GlobalNodeModules) {
