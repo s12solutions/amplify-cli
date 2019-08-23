@@ -192,6 +192,7 @@ workflows:
               only:
                 - master
                 - graphql_e2e_testing
+                - plugin
           requires:
             - build
       - integration_test:
@@ -200,6 +201,7 @@ workflows:
               only:
                 - master
                 - beta
+                - plugin
           requires:
             - build
       - amplify_e2e_tests:
@@ -207,6 +209,7 @@ workflows:
             branches:
               only:
                 - master
+                - plugin
           requires:
             - build
 
@@ -223,3 +226,4 @@ workflows:
                 - release
                 - master
                 - beta
+                - plugin
