@@ -16,18 +16,22 @@ export default function scanPluginPlatform(pluginPlatform?: PluginPlatform): Plu
 
     pluginPlatform!.plugins = new PluginCollection();
 
-    pluginPlatform!.pluginDirectories.forEach((directory) => {
-        directory = normalizePluginDirectory(directory);
-        if (fs.existsSync(directory)) {
-            const subDirNames = fs.readdirSync(directory);
-            subDirNames.forEach((subDirName) => {
-                if (isMatchingNamePattern(pluginPlatform!.pluginPrefixes, subDirName)) {
-                    const pluginDirPath = path.join(directory, subDirName);
-                    verifyAndAdd(pluginPlatform!, pluginDirPath);
-                }
-            });
-        }
-    });
+    addCore(pluginPlatform!);
+
+    if(pluginPlatform!.pluginDirectories.length > 0 && pluginPlatform!.pluginPrefixes.length > 0){
+        pluginPlatform!.pluginDirectories.forEach((directory) => {
+            directory = normalizePluginDirectory(directory);
+            if (fs.existsSync(directory)) {
+                const subDirNames = fs.readdirSync(directory);
+                subDirNames.forEach((subDirName) => {
+                    if (isMatchingNamePattern(pluginPlatform!.pluginPrefixes, subDirName)) {
+                        const pluginDirPath = path.join(directory, subDirName);
+                        verifyAndAdd(pluginPlatform!, pluginDirPath);
+                    }
+                });
+            }
+        });
+    }
 
     if (pluginPlatform!.userAddedLocations && pluginPlatform!.userAddedLocations.length > 0) {
         pluginPlatform!.userAddedLocations.forEach((pluginDirPath) => {
@@ -39,6 +43,11 @@ export default function scanPluginPlatform(pluginPlatform?: PluginPlatform): Plu
     writePluginsJsonFile(pluginPlatform!);
 
     return pluginPlatform;
+}
+
+function addCore(pluginPlatform: PluginPlatform) {
+    const corePluginDirPath = path.normalize(path.join(__dirname, '../../'));
+    verifyAndAdd(pluginPlatform, corePluginDirPath);
 }
 
 function normalizePluginDirectory(directory: string): string {
