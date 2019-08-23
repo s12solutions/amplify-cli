@@ -209,7 +209,6 @@ workflows:
             branches:
               only:
                 - master
-                - plugin
           requires:
             - build
 
