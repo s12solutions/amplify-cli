@@ -32,49 +32,49 @@ export default async function list(context: Context) {
 
     switch (answer.selection) {
         case plugins:
-            await listPlugins(pluginPlatform);
+            await listPlugins(context, pluginPlatform);
             break;
         case excluded:
-            await listExcluded(pluginPlatform);
+            await listExcluded(context, pluginPlatform);
             break;
         case generalInfo:
-            await listGeneralInfo(pluginPlatform);
+            await listGeneralInfo(context, pluginPlatform);
             break;
         case configuration:
-            await listConfiguration(pluginPlatform);
+            await listConfiguration(context, pluginPlatform);
             break;
         case all:
-            listAll(pluginPlatform);
+            listAll(context, pluginPlatform);
             break;
         default:
-            listPlugins(pluginPlatform);
+            listPlugins(context, pluginPlatform);
             break;
     }
 }
 
-function listGeneralInfo(pluginPlatform: PluginPlatform) {
+function listGeneralInfo(context: Context, pluginPlatform: PluginPlatform) {
     const displayObject = {
         ...pluginPlatform
     }
     delete displayObject.plugins;
     delete displayObject.excluded;
 
-    console.log(util.inspect(displayObject, undefined, Infinity));
+    context.print.info(util.inspect(displayObject, undefined, Infinity));
 }
 
-function listAll(pluginPlatform: PluginPlatform) {
-   console.log(util.inspect(pluginPlatform, undefined, Infinity));
+function listAll(context: Context, pluginPlatform: PluginPlatform) {
+    context.print.info(util.inspect(pluginPlatform, undefined, Infinity));
 }
 
-async function listPlugins(pluginPlatform: PluginPlatform) {
-    listPluginCollection(pluginPlatform.plugins);
+async function listPlugins(context: Context, pluginPlatform: PluginPlatform) {
+    listPluginCollection(context, pluginPlatform.plugins);
 }
 
-async function listExcluded(pluginPlatform: PluginPlatform) {
-    listPluginCollection(pluginPlatform.excluded);
+async function listExcluded(context: Context, pluginPlatform: PluginPlatform) {
+    listPluginCollection(context, pluginPlatform.excluded);
 }
 
-async function listPluginCollection(collection: PluginCollection) {
+async function listPluginCollection(context: Context, collection: PluginCollection) {
     const all = 'all';
     const options = Object.keys(collection);
     if (options.length > 0) {
@@ -91,11 +91,11 @@ async function listPluginCollection(collection: PluginCollection) {
         }
 
         if (toList === all) {
-            console.log(util.inspect(collection, undefined, Infinity));
+            context.print.info(util.inspect(collection, undefined, Infinity));
         } else {
-            console.log(util.inspect(collection[toList], undefined, Infinity));
+            context.print.info(util.inspect(collection[toList], undefined, Infinity));
         }
     } else {
-        console.log('The collection is empty');
+        context.print.info('The collection is empty');
     }
 }

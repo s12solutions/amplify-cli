@@ -12,8 +12,8 @@ export default {
     Amplify: 'amplify',
     DotAmplifyDirName: '.amplify',
     AmplifyPrefix: 'amplify-',
-    LocalNodeModules: 'local-node-modules',
-    ParentDirectory: 'parent-directory',
+    LocalNodeModules: 'cli-local-node-modules',
+    ParentDirectory: 'cli-parent-directory',
     GlobalNodeModules: 'global-node-modules',
     ExecuteAmplifyCommand: 'executeAmplifyCommand',
     HandleAmplifyEvent: 'handleAmplifyEvent'

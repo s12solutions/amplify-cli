@@ -118,7 +118,7 @@ export function getAllPluginNames(pluginPlatform: PluginPlatform): Set<string> {
 }
 
 export async function scan(pluginPlatform?: PluginPlatform): Promise<PluginPlatform> {
-    const spinner = ora('Scan the Amplify CLI platform for plugins'); 
+    const spinner = ora('Scanning the Amplify CLI platform for plugins...'); 
     spinner.start();
     return new Promise((resolve, reject)=>{
         try{
