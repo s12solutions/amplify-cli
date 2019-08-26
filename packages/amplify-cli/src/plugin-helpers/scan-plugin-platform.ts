@@ -79,15 +79,24 @@ function verifyAndAdd(pluginPlatform: PluginPlatform, pluginDirPath: string) {
         //ToDo: resolve plugin package duplications
         const manifest = pluginVerificationResult.manifest as PluginManifest;
         const { name, version } = pluginVerificationResult.packageJson;
-
-        pluginPlatform.plugins[manifest.name] =
-            pluginPlatform.plugins[manifest.name] || [];
         const pluginInfo = new PluginInfo(name, version, pluginDirPath, manifest);
 
-        const pluginAlreadyAdded = pluginPlatform.plugins[manifest.name].some((item) => twoPluginsAreTheSame(item, pluginInfo));
+        let isPluginExcluded = false; 
+        if(pluginPlatform.excluded && pluginPlatform.excluded[manifest.name]){
+            isPluginExcluded = 
+                pluginPlatform.excluded[manifest.name].some((item) => twoPluginsAreTheSame(item, pluginInfo));
+        }
 
-        if(!pluginAlreadyAdded){
-            pluginPlatform.plugins[manifest.name].push(pluginInfo);
+        if(!isPluginExcluded){
+            pluginPlatform.plugins[manifest.name] =
+                pluginPlatform.plugins[manifest.name] || [];
+    
+            const pluginAlreadyAdded = 
+                pluginPlatform.plugins[manifest.name].some((item) => twoPluginsAreTheSame(item, pluginInfo));
+    
+            if(!pluginAlreadyAdded){
+                pluginPlatform.plugins[manifest.name].push(pluginInfo);
+            }
         }
     }
 }
