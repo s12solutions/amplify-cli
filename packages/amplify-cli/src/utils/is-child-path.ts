@@ -5,5 +5,6 @@ export default function isChildPath(child: string, parent: string): boolean {
         return false;
     }
     const parentTokens = parent.split(path.sep).filter(i => i.length);
-    return parentTokens.every((t, i) => child.split(path.sep)[i] === t);
+    const childTokens = child.split(path.sep).filter(i => i.length);
+    return parentTokens.every((element, index) => childTokens[index] === element);
 }
