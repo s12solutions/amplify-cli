@@ -47,7 +47,17 @@ export default function scanPluginPlatform(pluginPlatform?: PluginPlatform): Plu
 
 function addCore(pluginPlatform: PluginPlatform) {
     const corePluginDirPath = path.normalize(path.join(__dirname, '../../'));
-    verifyAndAdd(pluginPlatform, corePluginDirPath);
+    const pluginVerificationResult = verifyPlugin(corePluginDirPath);
+    if (pluginVerificationResult.verified) {
+        const manifest = pluginVerificationResult.manifest as PluginManifest;
+        const { name, version } = pluginVerificationResult.packageJson;
+        const pluginInfo = new PluginInfo(name, version, corePluginDirPath, manifest);
+
+        pluginPlatform.plugins[manifest.name] = [];
+        pluginPlatform.plugins[manifest.name].push(pluginInfo);
+    }else{
+        throw new Error('The local Amplify-CLI is corrupted')
+    }
 }
 
 function normalizePluginDirectory(directory: string): string {
@@ -76,7 +86,6 @@ function isMatchingNamePattern(pluginPrefixes: string[], pluginDirName: string):
 function verifyAndAdd(pluginPlatform: PluginPlatform, pluginDirPath: string) {
     const pluginVerificationResult = verifyPlugin(pluginDirPath);
     if (pluginVerificationResult.verified) {
-        //ToDo: resolve plugin package duplications
         const manifest = pluginVerificationResult.manifest as PluginManifest;
         const { name, version } = pluginVerificationResult.packageJson;
         const pluginInfo = new PluginInfo(name, version, pluginDirPath, manifest);
