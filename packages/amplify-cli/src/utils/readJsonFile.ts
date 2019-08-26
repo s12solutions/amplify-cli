@@ -7,6 +7,11 @@ function stripBOM(content: string) {
   return content;
 }
 
-export default function readJsonFile(jsonFilePath: string, encoding: string = 'utf8') {
+export function readJsonFileSync(jsonFilePath: string, encoding: string = 'utf8'): any {
   return JSON.parse(stripBOM(fs.readFileSync(jsonFilePath, encoding)));
+}
+
+export async function readJsonFile(jsonFilePath: string, encoding: string = 'utf8'): Promise<any> {
+  const contents = await fs.readFile(jsonFilePath, encoding);
+  return JSON.parse(stripBOM(contents));
 }

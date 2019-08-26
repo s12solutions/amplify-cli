@@ -3,19 +3,33 @@ import os from 'os';
 import fs from 'fs-extra';
 import PluginPlatform from '../domain/plugin-platform';
 import constants from '../domain/constants';
-import readJsonFile from '../utils/readJsonFile';
+import { readJsonFile, readJsonFileSync } from '../utils/readJsonFile';
 
-export function readPluginsJsonFile(): PluginPlatform | undefined {
+export function readPluginsJsonFileSync(): PluginPlatform | undefined {
     let result: PluginPlatform | undefined;
     const pluginsFilePath = path.join(os.homedir(),
         constants.DotAmplifyDirName, constants.PLUGINS_FILE_NAME);
     if (fs.existsSync(pluginsFilePath)) {
-        result = readJsonFile(pluginsFilePath)
+        result = readJsonFileSync(pluginsFilePath)
     }
     return result;
 }
 
-export function writePluginsJsonFile(pluginsJson: PluginPlatform): void {
+export async function readPluginsJsonFile(): Promise<PluginPlatform | undefined> {
+    let result: PluginPlatform | undefined;
+    const pluginsFilePath = path.join(os.homedir(),
+        constants.DotAmplifyDirName, constants.PLUGINS_FILE_NAME);
+
+    const exists = await fs.pathExists(pluginsFilePath); 
+
+    if (exists) {
+        result = await readJsonFile(pluginsFilePath)
+    }
+
+    return result;
+}
+
+export function writePluginsJsonFileSync(pluginsJson: PluginPlatform): void {
     const systemDotAmplifyDirPath = path.join(os.homedir(), constants.DotAmplifyDirName);
     const pluginsJsonFilePath = path.join(systemDotAmplifyDirPath, constants.PLUGINS_FILE_NAME);
 
@@ -23,4 +37,14 @@ export function writePluginsJsonFile(pluginsJson: PluginPlatform): void {
 
     const jsonString = JSON.stringify(pluginsJson, null, 4);
     fs.writeFileSync(pluginsJsonFilePath, jsonString, 'utf8');
+}
+
+export async function writePluginsJsonFile(pluginsJson: PluginPlatform): Promise<void> {
+    const systemDotAmplifyDirPath = path.join(os.homedir(), constants.DotAmplifyDirName);
+    const pluginsJsonFilePath = path.join(systemDotAmplifyDirPath, constants.PLUGINS_FILE_NAME);
+
+    await fs.ensureDir(systemDotAmplifyDirPath);
+
+    const jsonString = JSON.stringify(pluginsJson, null, 4);
+    await fs.writeFile(pluginsJsonFilePath, jsonString, 'utf8');
 }

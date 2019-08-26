@@ -4,9 +4,9 @@ import inquirer from '../domain/inquirer-helper';
 import Context from '../domain/context';
 import Constant from '../domain/constants'
 import { AmplifyEvent } from '../domain/amplify-event';
-import readJsonFile from '../utils/readJsonFile';
+import { readJsonFileSync } from '../utils/readJsonFile';
 import constants from '../domain/constants';
-import { validPluginName } from './verify-plugin'; 
+import { validPluginNameSync } from './verify-plugin'; 
 
 export default async function newPlugin(context: Context, pluginParentDirPath: string): Promise<string | undefined>  {
     const pluginName = await getPluginName(context, pluginParentDirPath);
@@ -30,7 +30,7 @@ async function getPluginName(context: Context, pluginParentDirPath: string): Pro
             message: 'What should be the name of the plugin:',
             default: pluginName,
             validate: (input : string) => {
-                const pluginNameValidationResult = validPluginName(input); 
+                const pluginNameValidationResult = validPluginNameSync(input); 
                 if(!pluginNameValidationResult.isValid){
                     return pluginNameValidationResult.message || 'Invalid plugin name'
                 }
@@ -110,7 +110,7 @@ async function copyTemplateFiles(context: Context, pluginParentDirPath: string, 
 
 function updatePackageJson(pluginDirPath: string, pluginName: string): void {
     const filePath = path.join(pluginDirPath, 'package.json');
-    const packageJson = readJsonFile(filePath);
+    const packageJson = readJsonFileSync(filePath);
     packageJson.name = pluginName;
     const jsonString = JSON.stringify(packageJson, null, 4);
     fs.writeFileSync(filePath, jsonString, 'utf8');
@@ -123,7 +123,7 @@ function updateAmplifyPluginJson(
     eventHandlers: string[]
 ): void {
     const filePath = path.join(pluginDirPath, constants.MANIFEST_FILE_NAME);
-    const amplifyPluginJson = readJsonFile(filePath);
+    const amplifyPluginJson = readJsonFileSync(filePath);
     amplifyPluginJson.name = pluginName;
     amplifyPluginJson.type = pluginType;
     amplifyPluginJson.eventHandlers = eventHandlers;

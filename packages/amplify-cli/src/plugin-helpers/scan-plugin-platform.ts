@@ -6,48 +6,63 @@ import constants from '../domain/constants';
 import { getGlobalNodeModuleDirPath } from '../utils/global-prefix';
 import PluginManifest from '../domain/plugin-manifest';
 import PluginInfo from '../domain/plugin-info';
-import verifyPlugin from './verify-plugin';
-import {readPluginsJsonFile, writePluginsJsonFile} from './access-plugins-file';
+import { verifyPlugin} from './verify-plugin';
+import { readPluginsJsonFile, writePluginsJsonFile} from './access-plugins-file';
 import { twoPluginsAreTheSame } from './compare-plugins'; 
 import isChildPath from '../utils/is-child-path';
 
-export default function scanPluginPlatform(pluginPlatform?: PluginPlatform): PluginPlatform {
-    pluginPlatform = pluginPlatform || readPluginsJsonFile() || new PluginPlatform();
+
+export async function scanPluginPlatform(pluginPlatform?: PluginPlatform): Promise<PluginPlatform> {
+    pluginPlatform = pluginPlatform || await readPluginsJsonFile() || new PluginPlatform();
 
     pluginPlatform!.plugins = new PluginCollection();
 
-    addCore(pluginPlatform!);
+    await addCore(pluginPlatform!);
+
+    const sequential = require('promise-sequential'); 
 
     if(pluginPlatform!.pluginDirectories.length > 0 && pluginPlatform!.pluginPrefixes.length > 0){
-        pluginPlatform!.pluginDirectories.forEach((directory) => {
-            directory = normalizePluginDirectory(directory);
-            if (fs.existsSync(directory)) {
-                const subDirNames = fs.readdirSync(directory);
-                subDirNames.forEach((subDirName) => {
-                    if (isMatchingNamePattern(pluginPlatform!.pluginPrefixes, subDirName)) {
-                        const pluginDirPath = path.join(directory, subDirName);
-                        verifyAndAdd(pluginPlatform!, pluginDirPath);
+        const scanDirTasks = pluginPlatform!.pluginDirectories.map((directory) => {
+            return async ()=>{
+                directory = normalizePluginDirectory(directory);
+                const exists = await fs.pathExists(directory); 
+                if (exists) {
+                    const subDirNames = await fs.readdir(directory);
+                    if(subDirNames.length > 0){
+                        const scanSubDirTasks = subDirNames.map((subDirName)=>{
+                            return async ()=>{
+                                if (isMatchingNamePattern(pluginPlatform!.pluginPrefixes, subDirName)) {
+                                    const pluginDirPath = path.join(directory, subDirName);
+                                    await verifyAndAdd(pluginPlatform!, pluginDirPath);
+                                }
+                            }
+                        }); 
+                        await sequential(scanSubDirTasks); 
                     }
-                });
+                }
             }
         });
+        await sequential(scanDirTasks);  
     }
 
     if (pluginPlatform!.userAddedLocations && pluginPlatform!.userAddedLocations.length > 0) {
-        pluginPlatform!.userAddedLocations.forEach((pluginDirPath) => {
-            verifyAndAdd(pluginPlatform!, pluginDirPath);
-        });
+        const scanUserLocationTasks = pluginPlatform!.userAddedLocations.map((pluginDirPath)=>{
+            return async ()=>{
+                await verifyAndAdd(pluginPlatform!, pluginDirPath);
+            }
+        })
+        await sequential(scanUserLocationTasks); 
     }
 
     pluginPlatform!.lastScanTime = new Date();
-    writePluginsJsonFile(pluginPlatform!);
+    await writePluginsJsonFile(pluginPlatform!);
 
     return pluginPlatform;
 }
 
-function addCore(pluginPlatform: PluginPlatform) {
+async function addCore(pluginPlatform: PluginPlatform) {
     const corePluginDirPath = path.normalize(path.join(__dirname, '../../'));
-    const pluginVerificationResult = verifyPlugin(corePluginDirPath);
+    const pluginVerificationResult = await verifyPlugin(corePluginDirPath);
     if (pluginVerificationResult.verified) {
         const manifest = pluginVerificationResult.manifest as PluginManifest;
         const { name, version } = pluginVerificationResult.packageJson;
@@ -82,9 +97,8 @@ function isMatchingNamePattern(pluginPrefixes: string[], pluginDirName: string):
     }
     return isMatchingNamePattern;
 }
-
-function verifyAndAdd(pluginPlatform: PluginPlatform, pluginDirPath: string) {
-    const pluginVerificationResult = verifyPlugin(pluginDirPath);
+async function verifyAndAdd(pluginPlatform: PluginPlatform, pluginDirPath: string) {
+    const pluginVerificationResult = await verifyPlugin(pluginDirPath);
     if (pluginVerificationResult.verified && 
         //Only the current core is added by the addCore(.) method, other packages can not be core
         pluginVerificationResult.manifest!.name !== constants.CORE) 
@@ -113,7 +127,7 @@ function verifyAndAdd(pluginPlatform: PluginPlatform, pluginDirPath: string) {
     }
 }
 
-export function isUnderScanCoverage(
+export function isUnderScanCoverageSync(
     pluginPlatform: PluginPlatform,
     pluginDirPath: string
 ): boolean {
@@ -133,4 +147,3 @@ export function isUnderScanCoverage(
 
     return result;
 }
-

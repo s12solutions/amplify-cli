@@ -1,9 +1,9 @@
 import ora from 'ora'; 
 import PluginPlatform from './domain/plugin-platform';
 import PluginInfo from './domain/plugin-info';
-import { readPluginsJsonFile, writePluginsJsonFile } from './plugin-helpers/access-plugins-file';
-import scanPluginPlatform, { isUnderScanCoverage } from './plugin-helpers/scan-plugin-platform';
-import verifyPlugin from './plugin-helpers/verify-plugin';
+import { readPluginsJsonFileSync, writePluginsJsonFileSync } from './plugin-helpers/access-plugins-file';
+import {scanPluginPlatform, isUnderScanCoverageSync } from './plugin-helpers/scan-plugin-platform';
+import { verifyPlugin, verifyPluginSync } from './plugin-helpers/verify-plugin';
 import newPlugin from './plugin-helpers/new-plugin';
 import AddPluginResult, { AddPluginError } from './domain/add-plugin-result';
 import { twoPluginsAreTheSame } from './plugin-helpers/compare-plugins';
@@ -18,7 +18,7 @@ export async function getPluginPlatform(): Promise<PluginPlatform> {
     //3. re-scan if needed.
     //4. write to update the plugins.json file if re-scan is performed
     //5. return the pluginsInfo object
-    let pluginPlatform = readPluginsJsonFile();
+    let pluginPlatform = readPluginsJsonFileSync();
     if (pluginPlatform) {
         const lastScanTime = new Date(pluginPlatform.lastScanTime);
         const currentTime = new Date();
@@ -120,16 +120,14 @@ export function getAllPluginNames(pluginPlatform: PluginPlatform): Set<string> {
 export async function scan(pluginPlatform?: PluginPlatform): Promise<PluginPlatform> {
     const spinner = ora('Scanning the Amplify CLI platform for plugins...'); 
     spinner.start();
-    return new Promise((resolve, reject)=>{
-        try{
-            const result = scanPluginPlatform(pluginPlatform); 
-            spinner.succeed('Amplify CLI platform scan successful.');
-            resolve (result); 
-        }catch(e){
-            spinner.fail('Amplify CLI platform scan failed.');
-            reject(e);
-        }
-    })
+    try{
+        const result = await scanPluginPlatform(pluginPlatform); 
+        spinner.succeed('Amplify CLI platform scan successful.');
+        return result; 
+    }catch(e){
+        spinner.fail('Amplify CLI platform scan failed.');
+        throw new Error('Amplify CLI platform scan failed.'); 
+    }
 }
 
 export { verifyPlugin };
@@ -152,7 +150,7 @@ export function addUserPluginPackage(
     pluginPlatform: PluginPlatform,
     pluginDirPath: string
 ): AddPluginResult {
-    const pluginVerificationResult = verifyPlugin(pluginDirPath);
+    const pluginVerificationResult = verifyPluginSync(pluginDirPath);
     const result = new AddPluginResult(false, pluginVerificationResult);
 
     if (pluginVerificationResult.verified) {
@@ -180,11 +178,11 @@ export function addUserPluginPackage(
             updatedPlugins.push(pluginInfo);
             pluginPlatform.plugins[pluginInfo.manifest.name] = updatedPlugins;
         
-            if (!isUnderScanCoverage(pluginPlatform, pluginDirPath)) {
+            if (!isUnderScanCoverageSync(pluginPlatform, pluginDirPath)) {
                 pluginPlatform.userAddedLocations.push(pluginDirPath);
             }
 
-            writePluginsJsonFile(pluginPlatform);
+            writePluginsJsonFileSync(pluginPlatform);
             result.isAdded = true;
         }
     } else {
@@ -197,7 +195,7 @@ export function addExcludedPluginPackage(
     pluginPlatform: PluginPlatform,
     pluginInfo: PluginInfo
 ): AddPluginResult {
-    const pluginVerificationResult = verifyPlugin(pluginInfo.packageLocation);
+    const pluginVerificationResult = verifyPluginSync(pluginInfo.packageLocation);
     const result = new AddPluginResult(false, pluginVerificationResult);
     if (pluginVerificationResult.verified) {
         const updatedExcluded = new Array<PluginInfo>();
@@ -224,10 +222,10 @@ export function addExcludedPluginPackage(
         updatedPlugins.push(pluginInfo);
         pluginPlatform.plugins[pluginInfo.manifest.name] = updatedPlugins;
 
-        if (!isUnderScanCoverage(pluginPlatform, pluginInfo.packageLocation)){
+        if (!isUnderScanCoverageSync(pluginPlatform, pluginInfo.packageLocation)){
             pluginPlatform.userAddedLocations.push(pluginInfo.packageLocation);
         }
-        writePluginsJsonFile(pluginPlatform);
+        writePluginsJsonFileSync(pluginPlatform);
         result.isAdded = true;
     } else {
         result.error = AddPluginError.FailedVerification;
@@ -270,11 +268,11 @@ export function removePluginPackage(
     }
 
     //if the plugin is under scan coverage, insert into the excluded
-    if (isUnderScanCoverage(pluginPlatform, pluginInfo.packageLocation)) {
+    if (isUnderScanCoverageSync(pluginPlatform, pluginInfo.packageLocation)) {
         pluginPlatform.excluded[pluginInfo.manifest.name] =
             pluginPlatform.excluded[pluginInfo.manifest.name] || [];
         pluginPlatform.excluded[pluginInfo.manifest.name].push(pluginInfo);
     }
-    writePluginsJsonFile(pluginPlatform);
+    writePluginsJsonFileSync(pluginPlatform);
 }
 

@@ -5,7 +5,7 @@ import Context from '../../domain/context';
 import PluginPlatform from '../../domain/plugin-platform';
 import inquirer from '../../domain/inquirer-helper';
 import Constants from '../../domain/constants';
-import { writePluginsJsonFile } from '../../plugin-helpers/access-plugins-file';
+import { writePluginsJsonFileSync } from '../../plugin-helpers/access-plugins-file';
 import { scan } from '../../plugin-manager';
 
 export default async function configure(context: Context): Promise<PluginPlatform> {
@@ -46,7 +46,7 @@ export default async function configure(context: Context): Promise<PluginPlatfor
         }
     } while (answer.selection !== exit);
 
-    writePluginsJsonFile(pluginPlatform);
+    writePluginsJsonFileSync(pluginPlatform);
 
     return scan(pluginPlatform); 
 }
