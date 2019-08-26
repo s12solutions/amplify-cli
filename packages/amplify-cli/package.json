@@ -1,6 +1,6 @@
 {
   "name": "@aws-amplify/cli",
-  "version": "1.12.1-plugin.6",
+  "version": "1.12.1-plugin.7",
   "description": "Amplify CLI",
   "main": "lib/index.js",
   "bin": {
