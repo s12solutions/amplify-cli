@@ -85,7 +85,10 @@ function isMatchingNamePattern(pluginPrefixes: string[], pluginDirName: string):
 
 function verifyAndAdd(pluginPlatform: PluginPlatform, pluginDirPath: string) {
     const pluginVerificationResult = verifyPlugin(pluginDirPath);
-    if (pluginVerificationResult.verified) {
+    if (pluginVerificationResult.verified && 
+        //Only the current core is added by the addCore(.) method, other packages can not be core
+        pluginVerificationResult.manifest!.name !== constants.CORE) 
+    {
         const manifest = pluginVerificationResult.manifest as PluginManifest;
         const { name, version } = pluginVerificationResult.packageJson;
         const pluginInfo = new PluginInfo(name, version, pluginDirPath, manifest);
