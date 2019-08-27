@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.12.1-plugin.9](https://github.com/aws-amplify/amplify-cli/compare/@aws-amplify/cli@1.12.1-plugin.8...@aws-amplify/cli@1.12.1-plugin.9) (2019-08-27)
+
+
+### Features
+
+* **cli:** refactor plugin platform ([f2903c5](https://github.com/aws-amplify/amplify-cli/commit/f2903c5))
+
+
+
+
+
 ## [1.12.1-plugin.8](https://github.com/aws-amplify/amplify-cli/compare/@aws-amplify/cli@1.12.1-plugin.7...@aws-amplify/cli@1.12.1-plugin.8) (2019-08-27)
 
 
