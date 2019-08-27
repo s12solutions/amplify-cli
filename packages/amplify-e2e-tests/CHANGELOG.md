@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.1-plugin.2](https://github.com/aws-amplify/amplify-cli/compare/amplify-e2e-tests@1.10.1-plugin.1...amplify-e2e-tests@1.10.1-plugin.2) (2019-08-27)
+
+
+### Bug Fixes
+
+* regression for e2e tests because of nexpect reference ([#2120](https://github.com/aws-amplify/amplify-cli/issues/2120)) ([7659500](https://github.com/aws-amplify/amplify-cli/commit/7659500))
+
+
+
+
+
 ## [1.10.1-plugin.1](https://github.com/aws-amplify/amplify-cli/compare/amplify-e2e-tests@1.10.1-plugin.0...amplify-e2e-tests@1.10.1-plugin.1) (2019-08-23)
 
 **Note:** Version bump only for package amplify-e2e-tests

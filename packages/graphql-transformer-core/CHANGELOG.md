@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.11.1-plugin.2](https://github.com/aws-amplify/amplify-cli/compare/graphql-transformer-core@3.11.1-plugin.1...graphql-transformer-core@3.11.1-plugin.2) (2019-08-27)
+
+
+### Bug Fixes
+
+* [#1715](https://github.com/aws-amplify/amplify-cli/issues/1715) - Fix stack enumeration so transform.conf.json will be generated ([#2114](https://github.com/aws-amplify/amplify-cli/issues/2114)) ([d1b266b](https://github.com/aws-amplify/amplify-cli/commit/d1b266b))
+
+
+
+
+
 ## [3.11.1-plugin.1](https://github.com/aws-amplify/amplify-cli/compare/graphql-transformer-core@3.11.1-plugin.0...graphql-transformer-core@3.11.1-plugin.1) (2019-08-23)
 
 **Note:** Version bump only for package graphql-transformer-core

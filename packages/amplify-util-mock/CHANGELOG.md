@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.1-plugin.2](https://github.com/aws-amplify/amplify-cli/compare/amplify-util-mock@0.3.1-plugin.1...amplify-util-mock@0.3.1-plugin.2) (2019-08-27)
+
+
+### Bug Fixes
+
+* [#1056](https://github.com/aws-amplify/amplify-cli/issues/1056), dedup environment file reading ([#2088](https://github.com/aws-amplify/amplify-cli/issues/2088)) ([940deaa](https://github.com/aws-amplify/amplify-cli/commit/940deaa))
+
+
+### Features
+
+* **amplify-util-mock:** add support for S3 triggers in local mocking ([#2101](https://github.com/aws-amplify/amplify-cli/issues/2101)) ([ac9a134](https://github.com/aws-amplify/amplify-cli/commit/ac9a134))
+
+
+
+
+
 ## [0.3.1-plugin.1](https://github.com/aws-amplify/amplify-cli/compare/amplify-util-mock@0.3.1-plugin.0...amplify-util-mock@0.3.1-plugin.1) (2019-08-23)
 
 **Note:** Version bump only for package amplify-util-mock

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.1-plugin.2](https://github.com/aws-amplify/amplify-cli/compare/amplify-category-function@1.11.1-plugin.1...amplify-category-function@1.11.1-plugin.2) (2019-08-27)
+
+
+### Bug Fixes
+
+* [#223](https://github.com/aws-amplify/amplify-cli/issues/223) - Generate table name instead of resource name in CRUD Lambda ([#2107](https://github.com/aws-amplify/amplify-cli/issues/2107)) ([ad7c257](https://github.com/aws-amplify/amplify-cli/commit/ad7c257))
+
+
+
+
+
 ## [1.11.1-plugin.1](https://github.com/aws-amplify/amplify-cli/compare/amplify-category-function@1.11.1-plugin.0...amplify-category-function@1.11.1-plugin.1) (2019-08-23)
 
 **Note:** Version bump only for package amplify-category-function

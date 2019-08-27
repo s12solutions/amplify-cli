@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.12.1-plugin.8](https://github.com/aws-amplify/amplify-cli/compare/@aws-amplify/cli@1.12.1-plugin.7...@aws-amplify/cli@1.12.1-plugin.8) (2019-08-27)
+
+
+### Bug Fixes
+
+* [#1056](https://github.com/aws-amplify/amplify-cli/issues/1056), dedup environment file reading ([#2088](https://github.com/aws-amplify/amplify-cli/issues/2088)) ([940deaa](https://github.com/aws-amplify/amplify-cli/commit/940deaa))
+* [#429](https://github.com/aws-amplify/amplify-cli/issues/429) - Editor hanging bug ([#2086](https://github.com/aws-amplify/amplify-cli/issues/2086)) ([6767445](https://github.com/aws-amplify/amplify-cli/commit/6767445))
+
+
+
+
+
 ## [1.12.1-plugin.7](https://github.com/aws-amplify/amplify-cli/compare/@aws-amplify/cli@1.12.1-plugin.6...@aws-amplify/cli@1.12.1-plugin.7) (2019-08-26)
 
 **Note:** Version bump only for package @aws-amplify/cli
