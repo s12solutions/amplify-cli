@@ -13,12 +13,14 @@ export default async function configure(context: Context): Promise<PluginPlatfor
     const pluginDirectories = 'plugin directories';
     const pluginPrefixes = 'plugin prefixes';
     const maxScanIntervalInSeconds = 'max scan interval in seconds';
+    const list = 'list';
     const exit = 'save & exit';
 
     const options = [
         pluginDirectories,
         pluginPrefixes,
         maxScanIntervalInSeconds,
+        list,
         exit
     ];
     let answer = {
@@ -29,7 +31,7 @@ export default async function configure(context: Context): Promise<PluginPlatfor
         answer = await inquirer.prompt({
             type: 'list',
             name: 'selection',
-            message: 'Select section to configure',
+            message: 'Select the action or section to configure',
             choices: options
         });
 
@@ -43,6 +45,8 @@ export default async function configure(context: Context): Promise<PluginPlatfor
             case maxScanIntervalInSeconds:
                 await configureScanInterval(context, pluginPlatform);
                 break;
+            case list: 
+                await listAllConfigurations(context, pluginPlatform);
         }
     } while (answer.selection !== exit);
 
@@ -52,8 +56,10 @@ export default async function configure(context: Context): Promise<PluginPlatfor
 }
 
 async function configurePluginDirectories(context: Context, pluginPlatform: PluginPlatform) {
-    context.print.info('Directories the Amplify CLI currently scan for plugins:')
+    context.print.info('');
+    context.print.info('Directories the Amplify CLI currently scans for plugins:')
     context.print.info(pluginPlatform.pluginDirectories);
+    context.print.info('');
 
     const ADD = 'add';
     const REMOVE = 'remove'; 
@@ -72,7 +78,10 @@ async function configurePluginDirectories(context: Context, pluginPlatform: Plug
         await removePluginDirectory(pluginPlatform);
     }
     
+    context.print.info('');
+    context.print.info('The updated directories the Amplify CLI scans for plugins:')
     context.print.info(pluginPlatform.pluginDirectories);
+    context.print.info('');
 }
 
 async function addPluginDirectory(pluginPlatform: PluginPlatform) {
@@ -134,8 +143,10 @@ async function removePluginDirectory(pluginPlatform: PluginPlatform) {
 }
 
 async function configurePrefixes(context: Context, pluginPlatform: PluginPlatform) {
+    context.print.info(''); 
     context.print.info('Package name prefixes the Amplify CLI currently uses when scanning for plugins:')
     context.print.info(pluginPlatform.pluginPrefixes);
+    context.print.info(''); 
 
     const ADD = 'add';
     const REMOVE = 'remove'; 
@@ -154,12 +165,14 @@ async function configurePrefixes(context: Context, pluginPlatform: PluginPlatfor
         await removePrefixes(pluginPlatform);
         if(pluginPlatform.pluginPrefixes.length === 0){
            context.print.warning('You have removed all prefixes for plugin dir name matching!');
-           context.print.info(`It is recommended to add the ${Constants.AmplifyPrefix} \
-           prefix, so the Amplify CLI can function normally.`);
+           context.print.info(`It is recommended to add the "${Constants.AmplifyPrefix}" prefix, so the Amplify CLI can function normally.`);
         }
     }
     
+    context.print.info(''); 
+    context.print.info('The updated prefixes the Amplify CLI uses when scanning for plugins:')
     context.print.info(pluginPlatform.pluginPrefixes);
+    context.print.info(''); 
 }
 
 async function addPrefix(pluginPlatform: PluginPlatform) {
@@ -285,5 +298,7 @@ function listAllConfigurations(context: Context, pluginPlatform: PluginPlatform)
     delete displayObject.plugins;
     delete displayObject.excluded;
 
+    context.print.info('');
     context.print.info(util.inspect(displayObject, undefined, Infinity));
+    context.print.info('');
 }
