@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1-plugin.2](https://github.com/aws-amplify/amplify-cli/compare/graphql-key-transformer@1.5.1-plugin.1...graphql-key-transformer@1.5.1-plugin.2) (2019-08-27)
+
+
+### Bug Fixes
+
+* [#1720](https://github.com/aws-amplify/amplify-cli/issues/1720) - fix GraphQL name generation for [@key](https://github.com/key) ([#2093](https://github.com/aws-amplify/amplify-cli/issues/2093)) ([51716f3](https://github.com/aws-amplify/amplify-cli/commit/51716f3))
+* [#2033](https://github.com/aws-amplify/amplify-cli/issues/2033) - Make sure key field order is preserved ([#2117](https://github.com/aws-amplify/amplify-cli/issues/2117)) ([58f8f76](https://github.com/aws-amplify/amplify-cli/commit/58f8f76))
+
+
+
+
+
 ## [1.5.1-plugin.1](https://github.com/aws-amplify/amplify-cli/compare/graphql-key-transformer@1.5.1-plugin.0...graphql-key-transformer@1.5.1-plugin.1) (2019-08-23)
 
 **Note:** Version bump only for package graphql-key-transformer
