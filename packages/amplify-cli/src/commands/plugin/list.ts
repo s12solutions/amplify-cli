@@ -59,19 +59,27 @@ function listGeneralInfo(context: Context, pluginPlatform: PluginPlatform) {
     delete displayObject.plugins;
     delete displayObject.excluded;
 
+    context.print.info('');
     context.print.info(util.inspect(displayObject, undefined, Infinity));
+    context.print.info('');
 }
 
 function listAll(context: Context, pluginPlatform: PluginPlatform) {
+    context.print.info('');
     context.print.info(util.inspect(pluginPlatform, undefined, Infinity));
+    context.print.info('');
 }
 
 async function listPlugins(context: Context, pluginPlatform: PluginPlatform) {
-    listPluginCollection(context, pluginPlatform.plugins);
+    context.print.info('');
+    await listPluginCollection(context, pluginPlatform.plugins);
+    context.print.info('');
 }
 
 async function listExcluded(context: Context, pluginPlatform: PluginPlatform) {
-    listPluginCollection(context, pluginPlatform.excluded);
+    context.print.info('');
+    await listPluginCollection(context, pluginPlatform.excluded);
+    context.print.info('');
 }
 
 async function listPluginCollection(context: Context, collection: PluginCollection) {
@@ -84,7 +92,7 @@ async function listPluginCollection(context: Context, collection: PluginCollecti
             const answer = await inquirer.prompt({
                 type: 'list',
                 name: 'selection',
-                message: 'Select the name of the plugins to list',
+                message: 'Select the name of the plugin to list',
                 choices: options
             });
             toList = answer.selection;
