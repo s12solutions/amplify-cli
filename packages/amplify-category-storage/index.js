@@ -1,4 +1,7 @@
+const path = require('path');
+
 const category = 'storage';
+const pluginName = 'storage';
 
 async function add(context, providerName, service) {
   const options = {
@@ -76,9 +79,28 @@ async function getPermissionPolicies(context, resourceOpsMapping) {
   return { permissionPolicies, resourceAttributes };
 }
 
+async function executeAmplifyCommand(context) {
+  let commandPath = path.normalize(path.join(__dirname, 'commands'));
+  if (context.input.command === 'help') {
+    commandPath = path.join(commandPath, pluginName);
+  } else {
+    commandPath = path.join(commandPath, pluginName, context.input.command);
+  }
+
+  const commandModule = require(commandPath);
+  await commandModule.run(context);
+}
+
+async function handleAmplifyEvent(context, args) {
+  console.log(`${pluginName} handleAmplifyEvent to be implmented`);
+  context.print.info(`Received event args ${args}`);
+}
+
 module.exports = {
   add,
   console,
   migrate,
   getPermissionPolicies,
+  executeAmplifyCommand,
+  handleAmplifyEvent,
 };

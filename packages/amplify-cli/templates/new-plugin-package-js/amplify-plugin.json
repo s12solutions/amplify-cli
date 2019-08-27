@@ -1,0 +1,20 @@
+{
+    "name": "newplugin",
+    "type": "category",
+    "commands": [
+        "version",
+        "help"
+    ],
+    "eventHandlers":[
+        "PreInit",
+        "PostInit",
+        "PreAddResource",
+        "PostAddResource",
+        "PreRemoveResource",
+        "PostRemoveResource",
+        "PrePush",
+        "PostPush",
+        "PreUpdateMeta",
+        "PostUpdateMeta"
+    ]
+}
