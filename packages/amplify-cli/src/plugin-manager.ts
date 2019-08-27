@@ -2,13 +2,14 @@ import ora from 'ora';
 import PluginPlatform from './domain/plugin-platform';
 import PluginInfo from './domain/plugin-info';
 import { readPluginsJsonFileSync, writePluginsJsonFileSync } from './plugin-helpers/access-plugins-file';
-import {scanPluginPlatform, isUnderScanCoverageSync } from './plugin-helpers/scan-plugin-platform';
+import { scanPluginPlatform, getCorePluginDirPath, isUnderScanCoverageSync } from './plugin-helpers/scan-plugin-platform';
 import { verifyPlugin, verifyPluginSync } from './plugin-helpers/verify-plugin';
 import newPlugin from './plugin-helpers/new-plugin';
 import AddPluginResult, { AddPluginError } from './domain/add-plugin-result';
 import { twoPluginsAreTheSame } from './plugin-helpers/compare-plugins';
 import { AmplifyEvent } from './domain/amplify-event'; 
 import inquirer from './domain/inquirer-helper';
+import constants from './domain/constants';
 
 export async function getPluginPlatform(): Promise<PluginPlatform> {
     //This function is called at the beginning of each command execution
@@ -20,10 +21,14 @@ export async function getPluginPlatform(): Promise<PluginPlatform> {
     //5. return the pluginsInfo object
     let pluginPlatform = readPluginsJsonFileSync();
     if (pluginPlatform) {
-        const lastScanTime = new Date(pluginPlatform.lastScanTime);
-        const currentTime = new Date();
-        const timeDiffInSeconds = (currentTime.getTime() - lastScanTime.getTime()) / 1000;
-        if (timeDiffInSeconds > pluginPlatform.maxScanIntervalInSeconds) {
+        if(isCoreMatching(pluginPlatform)){
+            const lastScanTime = new Date(pluginPlatform.lastScanTime);
+            const currentTime = new Date();
+            const timeDiffInSeconds = (currentTime.getTime() - lastScanTime.getTime()) / 1000;
+            if (timeDiffInSeconds > pluginPlatform.maxScanIntervalInSeconds) {
+                pluginPlatform = await scan();
+            }
+        }else{
             pluginPlatform = await scan();
         }
     } else {
@@ -31,6 +36,16 @@ export async function getPluginPlatform(): Promise<PluginPlatform> {
     }
 
     return pluginPlatform;
+}
+
+function isCoreMatching(pluginPlatform: PluginPlatform): boolean{
+    try{
+        const currentCorePluginDirPath = getCorePluginDirPath(); 
+        const platformCorePluginDirPath = pluginPlatform.plugins[constants.CORE][0].packageLocation; 
+        return currentCorePluginDirPath === platformCorePluginDirPath; 
+    }catch{
+        return false; 
+    }
 }
 
 export function getPluginsWithName(

@@ -60,8 +60,12 @@ export async function scanPluginPlatform(pluginPlatform?: PluginPlatform): Promi
     return pluginPlatform;
 }
 
+export function getCorePluginDirPath(): string {
+    return path.normalize(path.join(__dirname, '../../'));
+}
+
 async function addCore(pluginPlatform: PluginPlatform) {
-    const corePluginDirPath = path.normalize(path.join(__dirname, '../../'));
+    const corePluginDirPath = getCorePluginDirPath(); 
     const pluginVerificationResult = await verifyPlugin(corePluginDirPath);
     if (pluginVerificationResult.verified) {
         const manifest = pluginVerificationResult.manifest as PluginManifest;
