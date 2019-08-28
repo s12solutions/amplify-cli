@@ -8,7 +8,6 @@ async function executeAmplifyCommand(context) {
 }
 
 async function handleAmplifyEvent(context, args) {
-  console.log(args.event);
   const eventHandlersDirPath = path.normalize(path.join(__dirname, 'event-handlers'));
   const eventHandlerPath = path.join(eventHandlersDirPath, `handle-${args.event}`);
   const eventHandlerModule = require(eventHandlerPath);

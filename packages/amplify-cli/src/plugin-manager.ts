@@ -165,66 +165,50 @@ export function addUserPluginPackage(
     pluginPlatform: PluginPlatform,
     pluginDirPath: string
 ): AddPluginResult {
-    const pluginVerificationResult = verifyPluginSync(pluginDirPath);
-    const result = new AddPluginResult(false, pluginVerificationResult);
-
-    if (pluginVerificationResult.verified) {
-        if (pluginPlatform.userAddedLocations.includes(pluginDirPath)) {
-            result.error = AddPluginError.UserPluginAlreadyAdded;
-        } else {
-            const { packageJson, manifest } = pluginVerificationResult; 
-            const pluginInfo = new PluginInfo(
-                packageJson.name,
-                packageJson.version,
-                pluginDirPath,
-                manifest!
-            );
-
-            const updatedPlugins = new Array<PluginInfo>();
-           
-            if(pluginPlatform.plugins[pluginInfo.manifest.name] && 
-            pluginPlatform.plugins[pluginInfo.manifest.name].length > 0){
-                pluginPlatform.plugins[pluginInfo.manifest.name].forEach((pluginInfoItem) => {
-                    if (!twoPluginsAreTheSame(pluginInfoItem, pluginInfo)) {
-                        updatedPlugins.push(pluginInfoItem);
-                    }
-                })
-            }
-            updatedPlugins.push(pluginInfo);
-            pluginPlatform.plugins[pluginInfo.manifest.name] = updatedPlugins;
-        
-            if (!isUnderScanCoverageSync(pluginPlatform, pluginDirPath)) {
-                pluginPlatform.userAddedLocations.push(pluginDirPath);
-            }
-
-            writePluginsJsonFileSync(pluginPlatform);
-            result.isAdded = true;
-        }
-    } else {
-        result.error = AddPluginError.FailedVerification;
-    }
-    return result;
+    return addPluginPackage(pluginPlatform, pluginDirPath); 
 }
 
 export function addExcludedPluginPackage(
     pluginPlatform: PluginPlatform,
     pluginInfo: PluginInfo
 ): AddPluginResult {
-    const pluginVerificationResult = verifyPluginSync(pluginInfo.packageLocation);
+    return addPluginPackage(pluginPlatform, pluginInfo.packageLocation); 
+}
+
+
+export function addPluginPackage(
+    pluginPlatform: PluginPlatform,
+    pluginDirPath: string
+): AddPluginResult {
+    const pluginVerificationResult = verifyPluginSync(pluginDirPath);
     const result = new AddPluginResult(false, pluginVerificationResult);
+
     if (pluginVerificationResult.verified) {
-        const updatedExcluded = new Array<PluginInfo>();
-        pluginPlatform.excluded[pluginInfo.manifest.name].forEach((pluginInfoItem) => {
-            if (!twoPluginsAreTheSame(pluginInfoItem, pluginInfo)) {
-                updatedExcluded.push(pluginInfoItem);
+        const { packageJson, manifest } = pluginVerificationResult; 
+        const pluginInfo = new PluginInfo(
+            packageJson.name,
+            packageJson.version,
+            pluginDirPath,
+            manifest!
+        );
+
+        //take the package out of the excluded
+        if(pluginPlatform.excluded[pluginInfo.manifest.name] && 
+        pluginPlatform.excluded[pluginInfo.manifest.name].length > 0){
+            const updatedExcluded = new Array<PluginInfo>();
+            pluginPlatform.excluded[pluginInfo.manifest.name].forEach((pluginInfoItem) => {
+                if (!twoPluginsAreTheSame(pluginInfoItem, pluginInfo)) {
+                    updatedExcluded.push(pluginInfoItem);
+                }
+            })
+            if (updatedExcluded.length > 0) {
+                pluginPlatform.excluded[pluginInfo.manifest.name] = updatedExcluded;
+            } else {
+                delete pluginPlatform.excluded[pluginInfo.manifest.name];
             }
-        })
-        if (updatedExcluded.length > 0) {
-            pluginPlatform.excluded[pluginInfo.manifest.name] = updatedExcluded;
-        } else {
-            delete pluginPlatform.excluded[pluginInfo.manifest.name];
         }
 
+        //insert into the plugins
         const updatedPlugins = new Array<PluginInfo>();
         if(pluginPlatform.plugins[pluginInfo.manifest.name] && 
         pluginPlatform.plugins[pluginInfo.manifest.name].length > 0){
@@ -236,10 +220,14 @@ export function addExcludedPluginPackage(
         }
         updatedPlugins.push(pluginInfo);
         pluginPlatform.plugins[pluginInfo.manifest.name] = updatedPlugins;
-
-        if (!isUnderScanCoverageSync(pluginPlatform, pluginInfo.packageLocation)){
-            pluginPlatform.userAddedLocations.push(pluginInfo.packageLocation);
+    
+        //insert into the userAddedLocations if it's not under scan coverage
+        if (!isUnderScanCoverageSync(pluginPlatform, pluginDirPath) && 
+        !pluginPlatform.userAddedLocations.includes(pluginDirPath)) {
+            pluginPlatform.userAddedLocations.push(pluginDirPath);
         }
+
+        //write the plugins.json file
         writePluginsJsonFileSync(pluginPlatform);
         result.isAdded = true;
     } else {

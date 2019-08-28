@@ -21,6 +21,15 @@ export async function scanPluginPlatform(pluginPlatform?: PluginPlatform): Promi
 
     const sequential = require('promise-sequential'); 
 
+    if (pluginPlatform!.userAddedLocations && pluginPlatform!.userAddedLocations.length > 0) {
+        const scanUserLocationTasks = pluginPlatform!.userAddedLocations.map((pluginDirPath)=>{
+            return async ()=>{
+                await verifyAndAdd(pluginPlatform!, pluginDirPath);
+            }
+        })
+        await sequential(scanUserLocationTasks); 
+    }
+
     if(pluginPlatform!.pluginDirectories.length > 0 && pluginPlatform!.pluginPrefixes.length > 0){
         const scanDirTasks = pluginPlatform!.pluginDirectories.map((directory) => {
             return async ()=>{
@@ -43,15 +52,6 @@ export async function scanPluginPlatform(pluginPlatform?: PluginPlatform): Promi
             }
         });
         await sequential(scanDirTasks);  
-    }
-
-    if (pluginPlatform!.userAddedLocations && pluginPlatform!.userAddedLocations.length > 0) {
-        const scanUserLocationTasks = pluginPlatform!.userAddedLocations.map((pluginDirPath)=>{
-            return async ()=>{
-                await verifyAndAdd(pluginPlatform!, pluginDirPath);
-            }
-        })
-        await sequential(scanUserLocationTasks); 
     }
 
     pluginPlatform!.lastScanTime = new Date();

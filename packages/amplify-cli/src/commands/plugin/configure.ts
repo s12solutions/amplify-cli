@@ -211,8 +211,8 @@ async function addPrefix(pluginPlatform: PluginPlatform) {
             validate: (input : string) => {
                 input = input.trim();
                 if(input.length<2 || input.length > 10){
-                    return 'The Length of prefix must be between 2 and 10.'
-                }else if (!/^[a-zA-Z][a-zA-Z0-9-]$/.test(input)) {
+                    return 'The Length of prefix must be between 2 and 20.'
+                }else if (!/^[a-zA-Z][a-zA-Z0-9-]+$/.test(input)) {
                     return 'Prefix must start with letter, and contain only alphanumerics and dashes(-)';
                 }
                 return true;

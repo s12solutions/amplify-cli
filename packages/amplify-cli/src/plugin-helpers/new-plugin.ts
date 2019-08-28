@@ -18,7 +18,7 @@ export default async function newPlugin(context: Context, pluginParentDirPath: s
 }
 
 async function getPluginName(context: Context, pluginParentDirPath: string): Promise<string | undefined> {
-    let pluginName = 'myAmplifyCliPlugin';
+    let pluginName = 'my-amplify-plugin';
     const yesFlag = context.input.options && context.input.options[Constant.YES];
 
     if (context.input.subCommands!.length > 1) { //subcommands: ['new', 'name']

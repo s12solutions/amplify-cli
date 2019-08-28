@@ -4,5 +4,5 @@ import path from 'path';
 
 export function run(context: Context) {
     const packageJsonFilePath = path.join(__dirname, '../../package.json');
-    console.log(readJsonFileSync(packageJsonFilePath).version);
+    context.print.info(readJsonFileSync(packageJsonFilePath).version);
 }

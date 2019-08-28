@@ -5,6 +5,10 @@ export default function help(context: Context) {
 
     const commands = [
         {
+          name: 'init',
+          description: 'Creates a new Amplify CLI plugin package for further development.',
+        },
+        {
           name: 'configure',
           description: 'Configures plugin scan behavior of the Amplify CLI pluggable platform.',
         },
@@ -23,10 +27,6 @@ export default function help(context: Context) {
         {
           name: 'remove',
           description: 'Removes a plugin from the Amplify CLI',
-        },
-        {
-          name: 'new',
-          description: 'Creates a new Amplify CLI plugin package for further development.',
         },
         {
           name: 'verify',

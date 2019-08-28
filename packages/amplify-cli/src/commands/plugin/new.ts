@@ -3,6 +3,7 @@ import Constant from '../../domain/constants';
 import { newPlugin } from '../../plugin-manager';
 import inquirer from '../../domain/inquirer-helper';
 import { addUserPluginPackage, confirmAndScan } from '../../plugin-manager';
+import { AddPluginError } from '../../domain/add-plugin-result';
 import path from 'path';
 
 export default async function newplugin(context: Context) {
@@ -38,7 +39,13 @@ async function plugIntoLocalAmplifyCli(context: Context, pluginDirPath: string):
             isPluggedIn = true;
             await confirmAndScan(context.pluginPlatform);
         } else {
-            context.print.error(addPluginResult.error);
+            context.print.error('Failed to add the plugin package.');
+            context.print.infor(`Error code: ${addPluginResult.error}`);
+            if(addPluginResult.error === AddPluginError.FailedVerification && 
+                addPluginResult.pluginVerificationResult &&
+                addPluginResult.pluginVerificationResult.error){
+                context.print.infor(`Plugin verification error code: ${addPluginResult.pluginVerificationResult.error}`);
+            }
         }
     }
     return isPluggedIn;

@@ -1,4 +1,3 @@
-import PluginManifest from './plugin-manifest';
 import PluginVerificationResult from './plugin-verification-result';
 
 export default class AddPluginResult {
@@ -11,7 +10,5 @@ export default class AddPluginResult {
 
 export enum AddPluginError {
     FailedVerification = "FailedVerification",
-    UserPluginAlreadyAdded = 'UserPluginAlreadyAdded',
-    //same package name and version but from another location
-    SamePackageAleadyAdded = 'SamePackageAleadyAdded'
+    Other = 'Other'
 }

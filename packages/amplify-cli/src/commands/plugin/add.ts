@@ -8,6 +8,7 @@ import {
     confirmAndScan 
 } from '../../plugin-manager';
 import inquirer, {InquirerOption, EXPAND } from '../../domain/inquirer-helper';
+import { AddPluginError } from '../../domain/add-plugin-result';
 
 const NEWPLUGINPACKAGE = 'A new plugin package';
 
@@ -79,10 +80,16 @@ async function addNewPluginPackage(context: Context) {
             context.print.success('Successfully added plugin package.');
             await confirmAndScan(context.pluginPlatform);
         } else {
-            context.print.error(addUserPluginResult.error);
+            context.print.error('Failed to add the plugin package.');
+            context.print.infor(`Error code: ${addUserPluginResult.error}`);
+            if(addUserPluginResult.error === AddPluginError.FailedVerification && 
+                addUserPluginResult.pluginVerificationResult &&
+                addUserPluginResult.pluginVerificationResult.error){
+                context.print.infor(`Plugin verification error code: ${addUserPluginResult.pluginVerificationResult.error}`);
+            }
         }
     } catch (e) {
-        context.print.error('Failed to add the plugin package.')
+        context.print.error('Failed to add the plugin package.');
         context.print.info(e);
     }
 }
