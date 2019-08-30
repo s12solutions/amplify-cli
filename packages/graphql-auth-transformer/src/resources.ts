@@ -311,6 +311,7 @@ export class ResourceFactory {
     if (!rules || rules.length === 0) {
       return comment(`No dynamic group authorization rules for field "${fieldToCheck}"`);
     }
+
     let groupAuthorizationExpression: Expression = this.dynamicAuthorizationExpressionForCreate(
       rules,
       variableToCheck,
@@ -318,6 +319,7 @@ export class ResourceFactory {
       rule => `Authorization rule on field "${fieldToCheck}": { allow: ${rule.allow}, \
 groupsField: "${rule.groupsField || DEFAULT_GROUPS_FIELD}", groupClaim: "${rule.groupClaim || DEFAULT_GROUP_CLAIM}" }`
     );
+
     return block(`Dynamic group authorization rules for field "${fieldToCheck}"`, [groupAuthorizationExpression]);
   }
 
@@ -331,11 +333,10 @@ groupsField: "${rule.groupsField || DEFAULT_GROUPS_FIELD}", groupClaim: "${rule.
     for (const rule of rules) {
       // for loop do check of rules here
       const groupsAttribute = rule.groupsField || DEFAULT_GROUPS_FIELD;
-      const groupClaimAttribute = rule.groupClaim || DEFAULT_GROUP_CLAIM;
       groupAuthorizationExpressions = groupAuthorizationExpressions.concat(
         formatComment
           ? comment(formatComment(rule))
-          : comment(`Authorization rule: { allow: ${rule.allow}, groupsField: "${groupsAttribute}", groupClaim: "${groupClaimAttribute}"`),
+          : comment(`Authorization rule: { allow: ${rule.allow}, groupsField: "${groupsAttribute}" }`),
         this.setUserGroups(rule.groupClaim),
         set(ref(variableToSet), raw(`$util.defaultIfNull($${variableToSet}, false)`)),
         forEach(ref('userGroup'), ref('userGroups'), [
@@ -641,6 +642,7 @@ identityClaim: "${rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_F
       );
       ruleNumber++;
     }
+
     return block('Owner Authorization Checks', [
       set(ref('ownerAuthExpressions'), list([])),
       set(ref('ownerAuthExpressionValues'), obj({})),
@@ -666,9 +668,8 @@ identityClaim: "${rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_F
     let groupAuthorizationExpressions = [];
     for (const rule of rules) {
       const groupsAttribute = rule.groupsField || DEFAULT_GROUPS_FIELD;
-      const groupClaimAttribute = rule.groupClaim || DEFAULT_GROUP_CLAIM;
       groupAuthorizationExpressions = groupAuthorizationExpressions.concat(
-        comment(`Authorization rule: { allow: ${rule.allow}, groupsField: "${groupsAttribute}", groupClaim: "${groupClaimAttribute}" }`),
+        comment(`Authorization rule: { allow: ${rule.allow}, groupsField: "${groupsAttribute}" }`),
         set(ref('allowedGroups'), ref(`util.defaultIfNull($${variableToCheck}.${groupsAttribute}, [])`)),
         this.setUserGroups(rule.groupClaim),
         forEach(ref('userGroup'), ref('userGroups'), [
