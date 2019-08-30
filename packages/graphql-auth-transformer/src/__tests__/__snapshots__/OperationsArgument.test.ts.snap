@@ -5,6 +5,7 @@ exports[`Test "create", "update", "delete" auth operations 1`] = `"$util.toJson(
 exports[`Test "create", "update", "delete" auth operations 2`] = `"$util.toJson($ctx.result)"`;
 
 exports[`Test "create", "update", "delete" auth operations 3`] = `
+<<<<<<< HEAD
 "## [Start] Determine request authentication mode **
 #if( $util.isNullOrEmpty($authMode) && !$util.isNull($ctx.identity) && !$util.isNull($ctx.identity.sub) && !$util.isNull($ctx.identity.issuer) && !$util.isNull($ctx.identity.username) && !$util.isNull($ctx.identity.claims) && !$util.isNull($ctx.identity.sourceIp) && !$util.isNull($ctx.identity.defaultAuthStrategy) )
   #set( $authMode = \\"userPools\\" )
@@ -24,6 +25,17 @@ exports[`Test "create", "update", "delete" auth operations 3`] = `
         #set( $isStaticGroupAuthorized = true )
       #end
     #end
+=======
+"## [Start] Static Group Authorization Checks **
+#set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\" } **
+#set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
+#set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
+#foreach( $userGroup in $userGroups )
+  #if( $allowedGroups.contains($userGroup) )
+    #set( $isStaticGroupAuthorized = true )
+>>>>>>> feat(amplify-category-auth): allow more than one groupClaim
   #end
   ## [End] Static Group Authorization Checks **
 
@@ -64,6 +76,7 @@ $util.qr($context.args.input.put(\\"__typename\\", \\"Post\\"))
 `;
 
 exports[`Test "create", "update", "delete" auth operations 4`] = `
+<<<<<<< HEAD
 "## [Start] Determine request authentication mode **
 #if( $util.isNullOrEmpty($authMode) && !$util.isNull($ctx.identity) && !$util.isNull($ctx.identity.sub) && !$util.isNull($ctx.identity.issuer) && !$util.isNull($ctx.identity.username) && !$util.isNull($ctx.identity.claims) && !$util.isNull($ctx.identity.sourceIp) && !$util.isNull($ctx.identity.defaultAuthStrategy) )
   #set( $authMode = \\"userPools\\" )
@@ -83,6 +96,17 @@ exports[`Test "create", "update", "delete" auth operations 4`] = `
         #set( $isStaticGroupAuthorized = true )
       #end
     #end
+=======
+"## [Start] Static Group Authorization Checks **
+#set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\" } **
+#set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
+#set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
+#foreach( $userGroup in $userGroups )
+  #if( $allowedGroups.contains($userGroup) )
+    #set( $isStaticGroupAuthorized = true )
+>>>>>>> feat(amplify-category-auth): allow more than one groupClaim
   #end
   ## [End] Static Group Authorization Checks **
 
@@ -277,6 +301,7 @@ $util.qr($update.put(\\"expression\\", \\"$expression\\"))
 `;
 
 exports[`Test "create", "update", "delete" auth operations 5`] = `
+<<<<<<< HEAD
 "## [Start] Determine request authentication mode **
 #if( $util.isNullOrEmpty($authMode) && !$util.isNull($ctx.identity) && !$util.isNull($ctx.identity.sub) && !$util.isNull($ctx.identity.issuer) && !$util.isNull($ctx.identity.username) && !$util.isNull($ctx.identity.claims) && !$util.isNull($ctx.identity.sourceIp) && !$util.isNull($ctx.identity.defaultAuthStrategy) )
   #set( $authMode = \\"userPools\\" )
@@ -296,6 +321,17 @@ exports[`Test "create", "update", "delete" auth operations 5`] = `
         #set( $isStaticGroupAuthorized = true )
       #end
     #end
+=======
+"## [Start] Static Group Authorization Checks **
+#set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\" } **
+#set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
+#set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
+#foreach( $userGroup in $userGroups )
+  #if( $allowedGroups.contains($userGroup) )
+    #set( $isStaticGroupAuthorized = true )
+>>>>>>> feat(amplify-category-auth): allow more than one groupClaim
   #end
   ## [End] Static Group Authorization Checks **
 
@@ -425,6 +461,7 @@ exports[`Test that checks subscription resolvers are created without auth logic 
 exports[`Test that checks subscription resolvers are created without auth logic 3`] = `"$util.toJson(null)"`;
 
 exports[`Test that checks subscription resolvers are generated with auth logic 1`] = `
+<<<<<<< HEAD
 "## [Start] Determine request authentication mode **
 #if( $util.isNullOrEmpty($authMode) && !$util.isNull($ctx.identity) && !$util.isNull($ctx.identity.sub) && !$util.isNull($ctx.identity.issuer) && !$util.isNull($ctx.identity.username) && !$util.isNull($ctx.identity.claims) && !$util.isNull($ctx.identity.sourceIp) && !$util.isNull($ctx.identity.defaultAuthStrategy) )
   #set( $authMode = \\"userPools\\" )
@@ -444,6 +481,17 @@ exports[`Test that checks subscription resolvers are generated with auth logic 1
         #set( $isStaticGroupAuthorized = true )
       #end
     #end
+=======
+"## [Start] Static Group Authorization Checks **
+#set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\"]\\" } **
+#set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
+#set( $allowedGroups = [\\"Admin\\"] )
+#foreach( $userGroup in $userGroups )
+  #if( $allowedGroups.contains($userGroup) )
+    #set( $isStaticGroupAuthorized = true )
+>>>>>>> feat(amplify-category-auth): allow more than one groupClaim
   #end
   ## [End] Static Group Authorization Checks **
 
@@ -481,6 +529,7 @@ $util.toJson(null)"
 `;
 
 exports[`Test that checks subscription resolvers are generated with auth logic 2`] = `
+<<<<<<< HEAD
 "## [Start] Determine request authentication mode **
 #if( $util.isNullOrEmpty($authMode) && !$util.isNull($ctx.identity) && !$util.isNull($ctx.identity.sub) && !$util.isNull($ctx.identity.issuer) && !$util.isNull($ctx.identity.username) && !$util.isNull($ctx.identity.claims) && !$util.isNull($ctx.identity.sourceIp) && !$util.isNull($ctx.identity.defaultAuthStrategy) )
   #set( $authMode = \\"userPools\\" )
@@ -500,6 +549,17 @@ exports[`Test that checks subscription resolvers are generated with auth logic 2
         #set( $isStaticGroupAuthorized = true )
       #end
     #end
+=======
+"## [Start] Static Group Authorization Checks **
+#set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\"]\\" } **
+#set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
+#set( $allowedGroups = [\\"Admin\\"] )
+#foreach( $userGroup in $userGroups )
+  #if( $allowedGroups.contains($userGroup) )
+    #set( $isStaticGroupAuthorized = true )
+>>>>>>> feat(amplify-category-auth): allow more than one groupClaim
   #end
   ## [End] Static Group Authorization Checks **
 
@@ -537,6 +597,7 @@ $util.toJson(null)"
 `;
 
 exports[`Test that checks subscription resolvers are generated with auth logic 3`] = `
+<<<<<<< HEAD
 "## [Start] Determine request authentication mode **
 #if( $util.isNullOrEmpty($authMode) && !$util.isNull($ctx.identity) && !$util.isNull($ctx.identity.sub) && !$util.isNull($ctx.identity.issuer) && !$util.isNull($ctx.identity.username) && !$util.isNull($ctx.identity.claims) && !$util.isNull($ctx.identity.sourceIp) && !$util.isNull($ctx.identity.defaultAuthStrategy) )
   #set( $authMode = \\"userPools\\" )
@@ -556,6 +617,17 @@ exports[`Test that checks subscription resolvers are generated with auth logic 3
         #set( $isStaticGroupAuthorized = true )
       #end
     #end
+=======
+"## [Start] Static Group Authorization Checks **
+#set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\"]\\" } **
+#set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
+#set( $allowedGroups = [\\"Admin\\"] )
+#foreach( $userGroup in $userGroups )
+  #if( $allowedGroups.contains($userGroup) )
+    #set( $isStaticGroupAuthorized = true )
+>>>>>>> feat(amplify-category-auth): allow more than one groupClaim
   #end
   ## [End] Static Group Authorization Checks **
 
@@ -597,6 +669,7 @@ exports[`Test that operation overwrites queries in auth operations 1`] = `"$util
 exports[`Test that operation overwrites queries in auth operations 2`] = `"$util.toJson($ctx.result)"`;
 
 exports[`Test that operation overwrites queries in auth operations 3`] = `
+<<<<<<< HEAD
 "## [Start] Determine request authentication mode **
 #if( $util.isNullOrEmpty($authMode) && !$util.isNull($ctx.identity) && !$util.isNull($ctx.identity.sub) && !$util.isNull($ctx.identity.issuer) && !$util.isNull($ctx.identity.username) && !$util.isNull($ctx.identity.claims) && !$util.isNull($ctx.identity.sourceIp) && !$util.isNull($ctx.identity.defaultAuthStrategy) )
   #set( $authMode = \\"userPools\\" )
@@ -616,6 +689,17 @@ exports[`Test that operation overwrites queries in auth operations 3`] = `
         #set( $isStaticGroupAuthorized = true )
       #end
     #end
+=======
+"## [Start] Static Group Authorization Checks **
+#set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\" } **
+#set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
+#set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
+#foreach( $userGroup in $userGroups )
+  #if( $allowedGroups.contains($userGroup) )
+    #set( $isStaticGroupAuthorized = true )
+>>>>>>> feat(amplify-category-auth): allow more than one groupClaim
   #end
   ## [End] Static Group Authorization Checks **
 
@@ -656,6 +740,7 @@ $util.qr($context.args.input.put(\\"__typename\\", \\"Post\\"))
 `;
 
 exports[`Test that operation overwrites queries in auth operations 4`] = `
+<<<<<<< HEAD
 "## [Start] Determine request authentication mode **
 #if( $util.isNullOrEmpty($authMode) && !$util.isNull($ctx.identity) && !$util.isNull($ctx.identity.sub) && !$util.isNull($ctx.identity.issuer) && !$util.isNull($ctx.identity.username) && !$util.isNull($ctx.identity.claims) && !$util.isNull($ctx.identity.sourceIp) && !$util.isNull($ctx.identity.defaultAuthStrategy) )
   #set( $authMode = \\"userPools\\" )
@@ -675,6 +760,17 @@ exports[`Test that operation overwrites queries in auth operations 4`] = `
         #set( $isStaticGroupAuthorized = true )
       #end
     #end
+=======
+"## [Start] Static Group Authorization Checks **
+#set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\" } **
+#set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
+#set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
+#foreach( $userGroup in $userGroups )
+  #if( $allowedGroups.contains($userGroup) )
+    #set( $isStaticGroupAuthorized = true )
+>>>>>>> feat(amplify-category-auth): allow more than one groupClaim
   #end
   ## [End] Static Group Authorization Checks **
 
@@ -869,6 +965,7 @@ $util.qr($update.put(\\"expression\\", \\"$expression\\"))
 `;
 
 exports[`Test that operation overwrites queries in auth operations 5`] = `
+<<<<<<< HEAD
 "## [Start] Determine request authentication mode **
 #if( $util.isNullOrEmpty($authMode) && !$util.isNull($ctx.identity) && !$util.isNull($ctx.identity.sub) && !$util.isNull($ctx.identity.issuer) && !$util.isNull($ctx.identity.username) && !$util.isNull($ctx.identity.claims) && !$util.isNull($ctx.identity.sourceIp) && !$util.isNull($ctx.identity.defaultAuthStrategy) )
   #set( $authMode = \\"userPools\\" )
@@ -888,6 +985,17 @@ exports[`Test that operation overwrites queries in auth operations 5`] = `
         #set( $isStaticGroupAuthorized = true )
       #end
     #end
+=======
+"## [Start] Static Group Authorization Checks **
+#set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\" } **
+#set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
+#set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
+#foreach( $userGroup in $userGroups )
+  #if( $allowedGroups.contains($userGroup) )
+    #set( $isStaticGroupAuthorized = true )
+>>>>>>> feat(amplify-category-auth): allow more than one groupClaim
   #end
   ## [End] Static Group Authorization Checks **
 
