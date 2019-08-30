@@ -4,7 +4,7 @@ import Resolver from 'cloudform-types/types/appSync/resolver';
 import { ResourceFactory } from './resources'
 import { AuthRule, ModelQuery, ModelMutation, ModelOperation } from './AuthRule'
 import {
-    ObjectTypeDefinitionNode, DirectiveNode, ArgumentNode, TypeDefinitionNode, Kind,
+    ObjectTypeDefinitionNode, DirectiveNode, ArgumentNode, Kind,
     FieldDefinitionNode, InterfaceTypeDefinitionNode, valueFromASTUntyped,
 } from 'graphql'
 import { ResourceConstants, ResolverResourceIDs, isListType,

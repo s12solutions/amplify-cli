@@ -5,12 +5,11 @@ import { AuthRule } from './AuthRule'
 import {
     str, ref, obj, set, iff, list, raw,
     forEach, compoundExpression, qref, equals, comment,
-    or, Expression, SetNode, and, not, parens,
+    or, Expression, and, not, parens,
     block, print, ifElse,
 } from 'graphql-mapping-template'
 import { ResourceConstants, NONE_VALUE } from 'graphql-transformer-common'
 import { AppSyncAuthModeModes } from './ModelAuthTransformer';
-import { InvalidDirectiveError } from 'graphql-transformer-core';
 
 import {
     DEFAULT_OWNER_FIELD,
@@ -138,39 +137,31 @@ export class ResourceFactory {
         if (!rules || rules.length === 0) {
             return comment(`No Static Group Authorization Rules`)
         }
-        const allowedGroups: string[] = []
-        let customClaim: string;
+        const variableToSet = ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable;
+        let groupAuthorizationExpressions = []
         for (const rule of rules) {
             const groups = rule.groups;
-            for (const group of groups) {
-                if (group) {
-                    allowedGroups.push(group);
-                }
-            }
-            if (rule.groupClaim) {
-                if (customClaim) {
-                    throw new InvalidDirectiveError(`@auth directive currently only supports one source for groupClaim.
-  - Identified '${customClaim}' and '${rule.groupClaim}'`)
-                }
-                customClaim = rule.groupClaim;
+           
+            if (groups) {
+                groupAuthorizationExpressions = groupAuthorizationExpressions.concat(
+                    comment(`Authorization rule: { allow: groups, groups: "${JSON.stringify(groups)}" }`),
+                    this.setUserGroups(rule.groupClaim),
+                    set(ref('allowedGroups'), list(groups.map(s => str(s)))),
+                    forEach(ref('userGroup'), ref('userGroups'), [
+                        iff(
+                            raw(`$allowedGroups.contains($userGroup)`),
+                            set(ref(variableToSet), raw('true'))
+                        )
+                    ])
+                );
             }
         }
 
+        // tslint:disable-next-line
         return block('Static Group Authorization Checks', [
-            comment(`Authorization rule: { allow: groups, groups: "${JSON.stringify(allowedGroups)}" }`),
-            this.setUserGroups(customClaim),
-            set(ref('allowedGroups'), list(allowedGroups.map(s => str(s)))),
-            // tslint:disable-next-line
-            raw(`#set($${ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable} = $util.defaultIfNull(
-                $${ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable}, false))`),
-            forEach(ref('userGroup'), ref('userGroups'), [
-                forEach(ref('allowedGroup'), ref('allowedGroups'), [
-                    iff(
-                        raw('$allowedGroup == $userGroup'),
-                        set(ref(ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable), raw('true'))
-                    )
-                ])
-            ])
+        raw(`#set($${ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable} = $util.defaultIfNull(
+            $${ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable}, false))`),
+            ...groupAuthorizationExpressions
         ])
     }
 
@@ -229,20 +220,14 @@ groupsField: "${rule.groupsField || DEFAULT_GROUPS_FIELD}" }`
         formatComment?: (rule: AuthRule) => string,
     ) {
         let groupAuthorizationExpressions = []
-        let customClaim: string;
         for (const rule of rules) {
-            if (rule.groupClaim) {
-                if (customClaim) {
-                    throw new InvalidDirectiveError('@auth directive currently only supports one source for groupClaim!')
-                }
-                customClaim = rule.groupClaim;
-            }
             // for loop do check of rules here
             const groupsAttribute = rule.groupsField || DEFAULT_GROUPS_FIELD
             groupAuthorizationExpressions = groupAuthorizationExpressions.concat(
                 formatComment ?
                     comment(formatComment(rule)) :
                     comment(`Authorization rule: { allow: ${rule.allow}, groupsField: "${groupsAttribute}" }`),
+                this.setUserGroups(rule.groupClaim),
                 set(
                     ref(variableToSet),
                     raw(`$util.defaultIfNull($${variableToSet}, false)`)
@@ -266,11 +251,7 @@ groupsField: "${rule.groupsField || DEFAULT_GROUPS_FIELD}" }`
             )
         }
 
-        // adds group claim
-        return compoundExpression([
-            this.setUserGroups(customClaim),
-            ...groupAuthorizationExpressions,
-        ])
+        return compoundExpression(groupAuthorizationExpressions)
     }
 
     /**
@@ -496,20 +477,14 @@ identityClaim: "${rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_F
 
         let groupAuthorizationExpressions = []
         let ruleNumber = 0
-        let customClaim: string;
         for (const rule of rules) {
-            if (rule.groupClaim) {
-                if (customClaim) {
-                    throw new InvalidDirectiveError('@auth directive currently only supports one source for groupClaim!')
-                }
-                customClaim = rule.groupClaim;
-            }
             const groupsAttribute = rule.groupsField || DEFAULT_GROUPS_FIELD
             const groupsAttributeName = `groupsAttribute${ruleNumber}`
             const groupName = `group${ruleNumber}`
             groupAuthorizationExpressions = groupAuthorizationExpressions.concat(
                 comment(`Authorization rule${fieldMention}: { allow: ${rule.allow}, groupsField: "${groupsAttribute}" }`),
                 // Add the new auth expression and values
+                this.setUserGroups(rule.groupClaim),
                 forEach(ref('userGroup'), ref('userGroups'), [
                     raw(`$util.qr($groupAuthExpressions.add("contains(#${groupsAttributeName}, :${groupName}$foreach.count)"))`),
                     raw(`$util.qr($groupAuthExpressionValues.put(":${groupName}$foreach.count", { "S": $userGroup }))`),
@@ -520,7 +495,6 @@ identityClaim: "${rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_F
         }
         // check for groupclaim here
         return block('Dynamic group authorization checks', [
-            this.setUserGroups(customClaim),
             set(ref('groupAuthExpressions'), list([])),
             set(ref('groupAuthExpressionValues'), obj({})),
             set(ref('groupAuthExpressionNames'), obj({})),
@@ -603,18 +577,12 @@ identityClaim: "${rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_F
             return comment(`No Dynamic Group Authorization Rules`)
         }
         let groupAuthorizationExpressions = [];
-        let customClaim: string;
         for (const rule of rules) {
-            if (rule.groupClaim) {
-                if (customClaim) {
-                    throw new InvalidDirectiveError('@auth directive currently only supports one source for groupClaim!')
-                }
-                customClaim = rule.groupClaim;
-            }
             const groupsAttribute = rule.groupsField || DEFAULT_GROUPS_FIELD
             groupAuthorizationExpressions = groupAuthorizationExpressions.concat(
                 comment(`Authorization rule: { allow: ${rule.allow}, groupsField: "${groupsAttribute}" }`),
                 set(ref('allowedGroups'), ref(`util.defaultIfNull($${variableToCheck}.${groupsAttribute}, [])`)),
+                this.setUserGroups(rule.groupClaim),
                 forEach(ref('userGroup'), ref('userGroups'), [
                     iff(
                         raw('$util.isList($allowedGroups)'),
@@ -633,7 +601,6 @@ identityClaim: "${rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_F
         }
         // check for group claim here
         return block('Dynamic Group Authorization Checks', [
-            this.setUserGroups(customClaim),
             set(ref(variableToSet), defaultValue),
             ...groupAuthorizationExpressions,
         ])
