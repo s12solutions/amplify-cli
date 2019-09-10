@@ -1,17 +1,10 @@
 {
-    "compilerOptions": {
-        "target": "es6",
-        "module": "commonjs",
-        "sourceMap": true,
-        "outDir": "lib",
-        "lib": [
-            "es2016.array.include",
-            "esnext.asynciterable",
-            "dom"
-        ]
-    },
-    "exclude": [
-        "node_modules",
-        "lib"
-    ]
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "sourceMap": true,
+    "outDir": "lib",
+    "lib": ["es2017", "esnext.asynciterable", "dom"]
+  },
+  "exclude": ["node_modules", "lib"]
 }
