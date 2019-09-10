@@ -5,10 +5,11 @@ exports[`Test "create", "update", "delete" auth operations 1`] = `"$util.toJson(
 exports[`Test "create", "update", "delete" auth operations 2`] = `"$util.toJson($ctx.result)"`;
 
 exports[`Test "create", "update", "delete" auth operations 3`] = `
-"## [Start] Static Group Authorization Checks **
+"#set( $compoundAuthRuleCounts = {} )
+## [Start] Static Group Authorization Checks **
 #set($isStaticGroupAuthorized = $util.defaultIfNull(
             $isStaticGroupAuthorized, false))
-## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\" } **
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\"   } **
 #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
 #set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
 #foreach( $userGroup in $userGroups )
@@ -56,7 +57,7 @@ exports[`Test "create", "update", "delete" auth operations 4`] = `
 "## [Start] Static Group Authorization Checks **
 #set($isStaticGroupAuthorized = $util.defaultIfNull(
             $isStaticGroupAuthorized, false))
-## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\" } **
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\"   } **
 #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
 #set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
 #foreach( $userGroup in $userGroups )
@@ -113,6 +114,30 @@ exports[`Test "create", "update", "delete" auth operations 4`] = `
   #end
   #if( $ownerAuthExpressionValues )
     $util.qr($authCondition.expressionValues.putAll($ownerAuthExpressionValues))
+  #end
+  ## Add compound auth conditions if they exist **
+  #if( $totalAuthExpression != \\"\\" && $compoundAuthExpressions && $compoundAuthExpressions.entrySet().size() > 0 )
+    #set( $totalAuthExpression = \\"$totalAuthExpression OR\\" )
+  #end
+  #if( $compoundAuthExpressions )
+    #foreach( $entry in $compoundAuthExpressions.entrySet() )
+      #if( $entry.value && $entry.value.size() > 0 )
+        #set( $innerCompoundAuth = \\"(\\" )
+      #end
+      #foreach( $authExpr in $entry.value )
+        #set( $innerCompoundAuth = \\"$innerCompoundAuth $authExpr\\" )
+        #if( $foreach.hasNext )
+          #set( $innerCompoundAuth = \\"$innerCompoundAuth AND\\" )
+        #end
+      #end
+      #if( $entry.value && $entry.value.size() > 0 )
+        #set( $innerCompoundAuth = \\"$innerCompoundAuth )\\" )
+      #end
+      #set( $totalAuthExpression = \\"$totalAuthExpression $innerCompoundAuth\\" )
+      #if( $foreach.hasNext )
+        #set( $totalAuthExpression = \\"$totalAuthExpression OR\\" )
+      #end
+    #end
   #end
   ## Set final expression if it has changed. **
   #if( $totalAuthExpression != \\"\\" )
@@ -254,7 +279,7 @@ exports[`Test "create", "update", "delete" auth operations 5`] = `
 "## [Start] Static Group Authorization Checks **
 #set($isStaticGroupAuthorized = $util.defaultIfNull(
             $isStaticGroupAuthorized, false))
-## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\" } **
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\"   } **
 #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
 #set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
 #foreach( $userGroup in $userGroups )
@@ -311,6 +336,30 @@ exports[`Test "create", "update", "delete" auth operations 5`] = `
   #end
   #if( $ownerAuthExpressionValues )
     $util.qr($authCondition.expressionValues.putAll($ownerAuthExpressionValues))
+  #end
+  ## Add compound auth conditions if they exist **
+  #if( $totalAuthExpression != \\"\\" && $compoundAuthExpressions && $compoundAuthExpressions.entrySet().size() > 0 )
+    #set( $totalAuthExpression = \\"$totalAuthExpression OR\\" )
+  #end
+  #if( $compoundAuthExpressions )
+    #foreach( $entry in $compoundAuthExpressions.entrySet() )
+      #if( $entry.value && $entry.value.size() > 0 )
+        #set( $innerCompoundAuth = \\"(\\" )
+      #end
+      #foreach( $authExpr in $entry.value )
+        #set( $innerCompoundAuth = \\"$innerCompoundAuth $authExpr\\" )
+        #if( $foreach.hasNext )
+          #set( $innerCompoundAuth = \\"$innerCompoundAuth AND\\" )
+        #end
+      #end
+      #if( $entry.value && $entry.value.size() > 0 )
+        #set( $innerCompoundAuth = \\"$innerCompoundAuth )\\" )
+      #end
+      #set( $totalAuthExpression = \\"$totalAuthExpression $innerCompoundAuth\\" )
+      #if( $foreach.hasNext )
+        #set( $totalAuthExpression = \\"$totalAuthExpression OR\\" )
+      #end
+    #end
   #end
   ## Set final expression if it has changed. **
   #if( $totalAuthExpression != \\"\\" )
@@ -387,7 +436,7 @@ exports[`Test that checks subscription resolvers are generated with auth logic 1
 "## [Start] Static Group Authorization Checks **
 #set($isStaticGroupAuthorized = $util.defaultIfNull(
             $isStaticGroupAuthorized, false))
-## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\"]\\" } **
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\"]\\"   } **
 #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
 #set( $allowedGroups = [\\"Admin\\"] )
 #foreach( $userGroup in $userGroups )
@@ -432,7 +481,7 @@ exports[`Test that checks subscription resolvers are generated with auth logic 2
 "## [Start] Static Group Authorization Checks **
 #set($isStaticGroupAuthorized = $util.defaultIfNull(
             $isStaticGroupAuthorized, false))
-## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\"]\\" } **
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\"]\\"   } **
 #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
 #set( $allowedGroups = [\\"Admin\\"] )
 #foreach( $userGroup in $userGroups )
@@ -477,7 +526,7 @@ exports[`Test that checks subscription resolvers are generated with auth logic 3
 "## [Start] Static Group Authorization Checks **
 #set($isStaticGroupAuthorized = $util.defaultIfNull(
             $isStaticGroupAuthorized, false))
-## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\"]\\" } **
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\"]\\"   } **
 #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
 #set( $allowedGroups = [\\"Admin\\"] )
 #foreach( $userGroup in $userGroups )
@@ -523,10 +572,11 @@ exports[`Test that operation overwrites queries in auth operations 1`] = `"$util
 exports[`Test that operation overwrites queries in auth operations 2`] = `"$util.toJson($ctx.result)"`;
 
 exports[`Test that operation overwrites queries in auth operations 3`] = `
-"## [Start] Static Group Authorization Checks **
+"#set( $compoundAuthRuleCounts = {} )
+## [Start] Static Group Authorization Checks **
 #set($isStaticGroupAuthorized = $util.defaultIfNull(
             $isStaticGroupAuthorized, false))
-## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\" } **
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\"   } **
 #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
 #set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
 #foreach( $userGroup in $userGroups )
@@ -574,7 +624,7 @@ exports[`Test that operation overwrites queries in auth operations 4`] = `
 "## [Start] Static Group Authorization Checks **
 #set($isStaticGroupAuthorized = $util.defaultIfNull(
             $isStaticGroupAuthorized, false))
-## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\" } **
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\"   } **
 #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
 #set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
 #foreach( $userGroup in $userGroups )
@@ -631,6 +681,30 @@ exports[`Test that operation overwrites queries in auth operations 4`] = `
   #end
   #if( $ownerAuthExpressionValues )
     $util.qr($authCondition.expressionValues.putAll($ownerAuthExpressionValues))
+  #end
+  ## Add compound auth conditions if they exist **
+  #if( $totalAuthExpression != \\"\\" && $compoundAuthExpressions && $compoundAuthExpressions.entrySet().size() > 0 )
+    #set( $totalAuthExpression = \\"$totalAuthExpression OR\\" )
+  #end
+  #if( $compoundAuthExpressions )
+    #foreach( $entry in $compoundAuthExpressions.entrySet() )
+      #if( $entry.value && $entry.value.size() > 0 )
+        #set( $innerCompoundAuth = \\"(\\" )
+      #end
+      #foreach( $authExpr in $entry.value )
+        #set( $innerCompoundAuth = \\"$innerCompoundAuth $authExpr\\" )
+        #if( $foreach.hasNext )
+          #set( $innerCompoundAuth = \\"$innerCompoundAuth AND\\" )
+        #end
+      #end
+      #if( $entry.value && $entry.value.size() > 0 )
+        #set( $innerCompoundAuth = \\"$innerCompoundAuth )\\" )
+      #end
+      #set( $totalAuthExpression = \\"$totalAuthExpression $innerCompoundAuth\\" )
+      #if( $foreach.hasNext )
+        #set( $totalAuthExpression = \\"$totalAuthExpression OR\\" )
+      #end
+    #end
   #end
   ## Set final expression if it has changed. **
   #if( $totalAuthExpression != \\"\\" )
@@ -772,7 +846,7 @@ exports[`Test that operation overwrites queries in auth operations 5`] = `
 "## [Start] Static Group Authorization Checks **
 #set($isStaticGroupAuthorized = $util.defaultIfNull(
             $isStaticGroupAuthorized, false))
-## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\" } **
+## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\",\\"Dev\\"]\\"   } **
 #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
 #set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
 #foreach( $userGroup in $userGroups )
@@ -829,6 +903,30 @@ exports[`Test that operation overwrites queries in auth operations 5`] = `
   #end
   #if( $ownerAuthExpressionValues )
     $util.qr($authCondition.expressionValues.putAll($ownerAuthExpressionValues))
+  #end
+  ## Add compound auth conditions if they exist **
+  #if( $totalAuthExpression != \\"\\" && $compoundAuthExpressions && $compoundAuthExpressions.entrySet().size() > 0 )
+    #set( $totalAuthExpression = \\"$totalAuthExpression OR\\" )
+  #end
+  #if( $compoundAuthExpressions )
+    #foreach( $entry in $compoundAuthExpressions.entrySet() )
+      #if( $entry.value && $entry.value.size() > 0 )
+        #set( $innerCompoundAuth = \\"(\\" )
+      #end
+      #foreach( $authExpr in $entry.value )
+        #set( $innerCompoundAuth = \\"$innerCompoundAuth $authExpr\\" )
+        #if( $foreach.hasNext )
+          #set( $innerCompoundAuth = \\"$innerCompoundAuth AND\\" )
+        #end
+      #end
+      #if( $entry.value && $entry.value.size() > 0 )
+        #set( $innerCompoundAuth = \\"$innerCompoundAuth )\\" )
+      #end
+      #set( $totalAuthExpression = \\"$totalAuthExpression $innerCompoundAuth\\" )
+      #if( $foreach.hasNext )
+        #set( $totalAuthExpression = \\"$totalAuthExpression OR\\" )
+      #end
+    #end
   #end
   ## Set final expression if it has changed. **
   #if( $totalAuthExpression != \\"\\" )
