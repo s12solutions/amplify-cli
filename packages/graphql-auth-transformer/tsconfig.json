@@ -1,11 +1,11 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es2017",
         "module": "commonjs",
         "sourceMap": true,
         "outDir": "lib",
         "lib": [
-            "es2016.array.include",
+            "es2017",
             "esnext.asynciterable",
             "dom"
         ],
