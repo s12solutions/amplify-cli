@@ -6,6 +6,7 @@ import { ModelAuthTransformer } from '../ModelAuthTransformer';
 test('Test "and" parameter forces all rules to pass for read', () => {
   const validSchema = `
     type Comment @model @auth(rules: [
+        {allow: groups, groups: ["Dev"], operations: [read]},
         {allow: groups, groups: ["Admin"], operations: [read], and: "testing"},
         {allow: owner, operations: [read], and: "testing"},
         {allow: groups, groupsField: "groupField", operations: [read], and: "testing"}
@@ -21,7 +22,14 @@ test('Test "and" parameter forces all rules to pass for read', () => {
   const transformer = new GraphQLTransform({
     transformers: [
       new DynamoDBModelTransformer(),
-      new ModelAuthTransformer({ authMode: 'AMAZON_COGNITO_USER_POOLS' }),
+      new ModelAuthTransformer({
+        authConfig: {
+          defaultAuthentication: {
+            authenticationType: 'AMAZON_COGNITO_USER_POOLS',
+          },
+          additionalAuthenticationProviders: [],
+        },
+      }),
     ],
   });
   const out = transformer.transform(validSchema);
@@ -29,10 +37,13 @@ test('Test "and" parameter forces all rules to pass for read', () => {
   expect(out.resolvers['Query.getComment.res.vtl']).toContain('Authorization rule:');
   expect(out.resolvers['Query.listComments.res.vtl']).toContain('Authorization rule:');
   expect(out.resolvers['Query.getComment.res.vtl']).toContain(
-    '!$util.defaultIfNull($compoundAuthRuleCounts.testing, 3) == 3'
+    '#set( $isStaticGroupAuthorized = true )'
+  );
+  expect(out.resolvers['Query.getComment.res.vtl']).toContain(
+    '!$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 3'
   );
   expect(out.resolvers['Query.listComments.res.vtl']).toContain(
-    '$util.defaultIfNull($compoundAuthRuleCounts.testing, 3) == 3'
+    '$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 3'
   );
   expect(out.resolvers['Query.getComment.res.vtl']).toMatchSnapshot();
   expect(out.resolvers['Query.listComments.res.vtl']).toMatchSnapshot();
@@ -56,26 +67,33 @@ test('Test "create", "update", "delete" auth operations with "and" parameter for
   const transformer = new GraphQLTransform({
     transformers: [
       new DynamoDBModelTransformer(),
-      new ModelAuthTransformer({ authMode: 'AMAZON_COGNITO_USER_POOLS' }),
+      new ModelAuthTransformer({
+        authConfig: {
+          defaultAuthentication: {
+            authenticationType: 'AMAZON_COGNITO_USER_POOLS',
+          },
+          additionalAuthenticationProviders: [],
+        },
+      }),
     ],
   });
   const out = transformer.transform(validSchema);
   expect(out).toBeDefined();
   expect(out.resolvers['Query.getPost.res.vtl']).toContain(
-    '!$util.defaultIfNull($compoundAuthRuleCounts.testing, 2) == 2'
+    '!$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2'
   );
 
   expect(out.resolvers['Query.getPost.res.vtl']).toMatchSnapshot();
   expect(out.resolvers['Query.listPosts.res.vtl']).toContain(
-    '$util.defaultIfNull($compoundAuthRuleCounts.testing, 2) == 2'
+    '$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2'
   );
   expect(out.resolvers['Query.listPosts.res.vtl']).toMatchSnapshot();
 
   expect(out.resolvers['Mutation.createPost.req.vtl']).toContain(
-    '!$util.defaultIfNull($compoundAuthRuleCounts.testing, 2) == 2'
+    '!$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2'
   );
   expect(out.resolvers['Mutation.createPost.req.vtl']).toContain(
-    '!$util.defaultIfNull($compoundAuthRuleCounts.testing2, 2) == 2'
+    '!$util.defaultIfNull($compoundAuthRuleCounts.testing2, 0) == 2'
   );
 
   expect(out.resolvers['Mutation.createPost.req.vtl']).toMatchSnapshot();
@@ -94,6 +112,8 @@ test('Test "create", "update", "delete" auth operations with "and" parameter for
       '#end'
   );
 
+  expect(out.resolvers['Mutation.updatePost.req.vtl']).toMatchSnapshot();
+
   expect(out.resolvers['Mutation.deletePost.req.vtl'].replace(/ +?/g, '')).toContain(
     '#if($compoundAuthRuleCounts.testing2==1)\n' +
       '$util.qr($compoundAuthExpressions.testing2.add("#owner0=:identity0"))\n' +
@@ -104,4 +124,37 @@ test('Test "create", "update", "delete" auth operations with "and" parameter for
       '$util.qr($compoundAuthExpressions.testing.add("contains(#groupsAttribute0,:group0$foreach.count)"))\n' +
       '#end'
   );
+
+  expect(out.resolvers['Mutation.deletePost.req.vtl']).toMatchSnapshot();
+});
+
+test('Test "update" auth operations with "and" parameter on fields prevents security bypass', () => {
+  const validSchema = `
+    type Post @model {
+        id: ID!
+        
+        protectedByB: String! @auth(rules: [{allow: owner, ownerField: "id", operations: [update], and: "bRule"}])
+        protectedByA: String! @auth(rules: [{allow: owner, ownerField: "id", operations: [update], and: "aRule"}])
+        protectedByC: String! @auth(rules: [{allow: groups, groups: ["Admin"], operations: [update], and: "cRule"}])
+        groupField: String!
+        createdAt: String
+        updatedAt: String
+    }
+    `;
+  const transformer = new GraphQLTransform({
+    transformers: [
+      new DynamoDBModelTransformer(),
+      new ModelAuthTransformer({
+        authConfig: {
+          defaultAuthentication: {
+            authenticationType: 'AMAZON_COGNITO_USER_POOLS',
+          },
+          additionalAuthenticationProviders: [],
+        },
+      }),
+    ],
+  });
+  const out = transformer.transform(validSchema);
+  expect(out).toBeDefined();
+  expect(out.resolvers['Mutation.updatePost.req.vtl']).toMatchSnapshot();
 });

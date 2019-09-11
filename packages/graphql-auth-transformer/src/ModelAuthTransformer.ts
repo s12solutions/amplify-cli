@@ -37,7 +37,21 @@ import {
   makeField,
   ModelResourceIDs,
 } from 'graphql-transformer-common';
-import { Expression, print, raw, iff, forEach, set, ref, list, compoundExpression, newline, comment, not } from 'graphql-mapping-template';
+import {
+  Expression,
+  print,
+  raw,
+  iff,
+  forEach,
+  set,
+  ref,
+  list,
+  compoundExpression,
+  newline,
+  comment,
+  not,
+  obj,
+} from 'graphql-mapping-template';
 import { ModelDirectiveConfiguration, ModelDirectiveOperationType, ModelSubscriptionLevel } from './ModelDirectiveConfiguration';
 
 import { OWNER_AUTH_STRATEGY, GROUPS_AUTH_STRATEGY, DEFAULT_OWNER_FIELD } from './constants';
@@ -711,7 +725,7 @@ Either make the field optional, set auth on the object and not the field, or dis
           fieldIsList
         );
 
-        const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(field);
+        const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(field, rules);
 
         // Populate a list of configured authentication providers based on the rules
         const authModesToCheck = new Set<AuthProvider>();
@@ -1003,7 +1017,7 @@ All @auth directives used on field definitions are performed when the field is r
         ownerAuthorizationRules,
         objectPath
       );
-      const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized();
+      const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(rules);
 
       // If we've any modes to check, then add the authMode check code block
       // to the start of the resolver.
@@ -1029,6 +1043,7 @@ All @auth directives used on field definitions are performed when the field is r
       // Update the existing resolver with the authorization checks.
       // These statements will be wrapped into an authMode check if statement
       const templateExpressions = [
+        set(ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts), obj({})),
         staticGroupAuthorizationExpression,
         newline(),
         dynamicGroupAuthorizationExpression,
@@ -1133,10 +1148,10 @@ All @auth directives used on field definitions are performed when the field is r
         ResourceConstants.SNIPPETS.IsLocalOwnerAuthorizedVariable,
         raw(`false`)
       );
-      const appendIfLocallyAuthorized = this.resources.appendItemIfLocallyAuthorized();
+      const appendIfLocallyAuthorized = this.resources.appendItemIfLocallyAuthorized(rules);
 
       const ifNotStaticallyAuthedFilterObjects = iff(
-        not(ref(ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable)),
+        rules.some(r => r.and) ? raw('true') : not(ref(ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable)),
         compoundExpression([
           set(ref('items'), list([])),
           forEach(ref('item'), ref(itemList), [
@@ -1173,6 +1188,7 @@ All @auth directives used on field definitions are performed when the field is r
 
       // These statements will be wrapped into an authMode check if statement
       const templateExpressions = [
+        set(ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts), obj({})),
         staticGroupAuthorizationExpression,
         newline(),
         comment('[Start] If not static group authorized, filter items'),
@@ -1257,7 +1273,7 @@ All @auth directives used on field definitions are performed when the field is r
           fieldIsList
         );
 
-        const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized();
+        const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(rules);
 
         // If we've any modes to check, then add the authMode check code block
         // to the start of the resolver.
@@ -1282,6 +1298,7 @@ All @auth directives used on field definitions are performed when the field is r
 
         // These statements will be wrapped into an authMode check if statement
         const authCheckExpressions = [
+          set(ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts), obj({})),
           staticGroupAuthorizationExpression,
           newline(),
           dynamicGroupAuthorizationExpression,
@@ -1367,6 +1384,7 @@ All @auth directives used on field definitions are performed when the field is r
         // are done before calling PutItem.
         const dynamicGroupAuthorizationExpression = this.resources.dynamicGroupAuthorizationExpressionForUpdateOrDeleteOperations(
           dynamicGroupAuthorizationRules,
+          staticGroupAuthorizationRules,
           field ? field.name.value : undefined
         );
 
@@ -1379,6 +1397,7 @@ All @auth directives used on field definitions are performed when the field is r
         };
         const ownerAuthorizationExpression = this.resources.ownerAuthorizationExpressionForUpdateOrDeleteOperations(
           ownerAuthorizationRules,
+          staticGroupAuthorizationRules,
           fieldIsList,
           field ? field.name.value : undefined
         );
@@ -1423,6 +1442,10 @@ All @auth directives used on field definitions are performed when the field is r
 
         // These statements will be wrapped into an authMode check if statement
         const authorizationLogic = compoundExpression([
+          set(
+            ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts),
+            raw(`$util.defaultIfNull($${ResourceConstants.SNIPPETS.CompoundAuthRuleCounts}, {})`)
+          ),
           staticGroupAuthorizationExpression,
           newline(),
           ifNotStaticallyAuthedCreateAuthCondition,
@@ -1725,7 +1748,7 @@ All @auth directives used on field definitions are performed when the field is r
         const staticGroupAuthorizationExpression = this.resources.staticGroupAuthorizationExpression(staticGroupAuthorizationRules);
         const ownerAuthorizationExpression = this.resources.ownerAuthorizationExpressionForSubscriptions(ownerAuthorizationRules);
 
-        const throwIfUnauthorizedExpression = this.resources.throwIfSubscriptionUnauthorized();
+        const throwIfUnauthorizedExpression = this.resources.throwIfSubscriptionUnauthorized(rules);
 
         // Populate a list of configured authentication providers based on the rules
         const authModesToCheck = new Set<AuthProvider>();

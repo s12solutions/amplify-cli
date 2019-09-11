@@ -250,6 +250,7 @@ export class ResourceFactory {
     if (!rules || rules.length === 0) {
       return comment(`No Static Group Authorization Rules`);
     }
+
     const variableToSet = this.getStaticAuthorizationVariable(field);
     let groupAuthorizationExpressions = [];
     for (const rule of rules) {
@@ -266,7 +267,12 @@ export class ResourceFactory {
           this.setUserGroups(rule.groupClaim),
           set(ref('allowedGroups'), list(groups.map(s => str(s)))),
           forEach(ref('userGroup'), ref('userGroups'), [
-            iff(raw(`$allowedGroups.contains($userGroup)`), compoundExpression([set(ref(variableToSet), raw('true')), raw('#break')])),
+            iff(
+              raw(`$allowedGroups.contains($userGroup)`),
+              rule.and
+                ? compoundExpression([this.incrementAuthRuleCounter(rule), raw('#break')])
+                : compoundExpression([set(ref(variableToSet), raw('true')), raw('#break')])
+            ),
           ])
         );
       }
@@ -321,10 +327,13 @@ groupsField: "${rule.groupsField || DEFAULT_GROUPS_FIELD}", groupClaim: "${rule.
       // for loop do check of rules here
       const groupsAttribute = rule.groupsField || DEFAULT_GROUPS_FIELD;
       const groupClaimAttribute = rule.groupClaim || DEFAULT_GROUP_CLAIM;
+      const compoundAttribute = rule.and ? ', and: "' + rule.and + '"' : '';
       groupAuthorizationExpressions = groupAuthorizationExpressions.concat(
         formatComment
           ? comment(formatComment(rule))
-          : comment(`Authorization rule: { allow: ${rule.allow}, groupsField: "${groupsAttribute}", groupClaim: "${groupClaimAttribute}"`),
+          : comment(
+              `Authorization rule: { allow: ${rule.allow}, groupsField: "${groupsAttribute}", groupClaim: "${groupClaimAttribute}"${compoundAttribute}`
+            ),
         this.setUserGroups(rule.groupClaim),
         set(ref(variableToSet), raw(`$util.defaultIfNull($${variableToSet}, false)`)),
         forEach(ref('userGroup'), ref('userGroups'), [
@@ -332,18 +341,14 @@ groupsField: "${rule.groupsField || DEFAULT_GROUPS_FIELD}", groupClaim: "${rule.
             raw(`$util.isList($ctx.args.input.${groupsAttribute})`),
             iff(
               ref(`${variableToCheck}.${groupsAttribute}.contains($userGroup)`),
-              rule.and
-                ? compoundExpression([set(ref(variableToSet), raw('true')), this.incrementAuthRuleCounter(rule)])
-                : set(ref(variableToSet), raw('true'))
+              rule.and ? this.incrementAuthRuleCounter(rule) : set(ref(variableToSet), raw('true'))
             )
           ),
           iff(
             raw(`$util.isString($ctx.args.input.${groupsAttribute})`),
             iff(
               raw(`$ctx.args.input.${groupsAttribute} == $userGroup`),
-              rule.and
-                ? compoundExpression([set(ref(variableToSet), raw('true')), this.incrementAuthRuleCounter(rule)])
-                : set(ref(variableToSet), raw('true'))
+              rule.and ? this.incrementAuthRuleCounter(rule) : set(ref(variableToSet), raw('true'))
             )
           ),
         ])
@@ -420,9 +425,7 @@ groupsField: "${rule.groupsField || DEFAULT_GROUPS_FIELD}", groupClaim: "${rule.
           forEach(ref('allowedOwner'), ref(allowedOwnersVariable), [
             iff(
               raw(`$allowedOwner == $identityValue`),
-              rule.and
-                ? compoundExpression([set(ref(variableToSet), raw('true')), this.incrementAuthRuleCounter(rule)])
-                : set(ref(variableToSet), raw('true'))
+              rule.and ? this.incrementAuthRuleCounter(rule) : set(ref(variableToSet), raw('true'))
             ),
           ])
         ),
@@ -431,9 +434,7 @@ groupsField: "${rule.groupsField || DEFAULT_GROUPS_FIELD}", groupClaim: "${rule.
           raw(`$util.isString($${allowedOwnersVariable})`),
           iff(
             raw(`$${allowedOwnersVariable} == $identityValue`),
-            rule.and
-              ? compoundExpression([set(ref(variableToSet), raw('true')), this.incrementAuthRuleCounter(rule)])
-              : set(ref(variableToSet), raw('true'))
+            rule.and ? this.incrementAuthRuleCounter(rule) : set(ref(variableToSet), raw('true'))
           )
         )
       );
@@ -513,9 +514,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
           forEach(ref('allowedOwner'), ref(allowedOwnersVariable), [
             iff(
               raw(`$allowedOwner == $identityValue`),
-              rule.and
-                ? compoundExpression([set(ref(variableToSet), raw('true')), this.incrementAuthRuleCounter(rule)])
-                : set(ref(variableToSet), raw('true'))
+              rule.and ? this.incrementAuthRuleCounter(rule) : set(ref(variableToSet), raw('true'))
             ),
           ])
         ),
@@ -524,9 +523,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
           raw(`$util.isString($${allowedOwnersVariable})`),
           iff(
             raw(`$${allowedOwnersVariable} == $identityValue`),
-            rule.and
-              ? compoundExpression([set(ref(variableToSet), raw('true')), this.incrementAuthRuleCounter(rule)])
-              : set(ref(variableToSet), raw('true'))
+            rule.and ? this.incrementAuthRuleCounter(rule) : set(ref(variableToSet), raw('true'))
           )
         )
       );
@@ -540,9 +537,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
             and([raw(`$util.isNull($${allowedOwnersVariable})`), parens(raw(`! $${variableToCheck}.containsKey("${ownerAttribute}")`))]),
             compoundExpression([
               qref(`$${variableToCheck}.put("${ownerAttribute}", $identityValue)`),
-              rule.and
-                ? compoundExpression([set(ref(variableToSet), raw('true')), this.incrementAuthRuleCounter(rule)])
-                : set(ref(variableToSet), raw('true')),
+              rule.and ? this.incrementAuthRuleCounter(rule) : set(ref(variableToSet), raw('true')),
             ])
           )
         );
@@ -557,9 +552,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
             and([raw(`$util.isNull($${allowedOwnersVariable})`), parens(raw(`! $${variableToCheck}.containsKey("${ownerAttribute}")`))]),
             compoundExpression([
               qref(`$${variableToCheck}.put("${ownerAttribute}", ["$identityValue"])`),
-              rule.and
-                ? compoundExpression([set(ref(variableToSet), raw('true')), this.incrementAuthRuleCounter(rule)])
-                : set(ref(variableToSet), raw('true')),
+              rule.and ? this.incrementAuthRuleCounter(rule) : set(ref(variableToSet), raw('true')),
             ])
           )
         );
@@ -626,12 +619,9 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
     }
     // check for groupclaim here
     return block('Dynamic group authorization checks', [
-      iff(
-        not(ref('compoundAuthExpressions')),
-        compoundExpression([
-          set(ref('compoundAuthExpressions'), obj({})),
-          ...this.compoundRuleNames(rules).map(r => set(ref(`compoundAuthExpressions.${r}`), list([]))),
-        ])
+      iff(not(ref('compoundAuthExpressions')), set(ref('compoundAuthExpressions'), obj({}))),
+      ...this.compoundRuleNames(rules).map(r =>
+        set(ref(`compoundAuthExpressions.${r}`), raw(`$util.defaultIfNull(compoundAuthExpressions.${r}, [])`))
       ),
       set(ref('groupAuthExpressions'), list([])),
       set(ref('groupAuthExpressionValues'), obj({})),
@@ -668,6 +658,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
     if (!rules || rules.length === 0) {
       return comment(`No owner authorization rules${fieldMention}`);
     }
+
     let ownerAuthorizationExpressions = [];
     let ruleNumber = 0;
     for (const rule of rules) {
@@ -736,12 +727,9 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
 
     return block('Owner Authorization Checks', [
       set(ref('ownerAuthExpressions'), list([])),
-      iff(
-        not(ref('compoundAuthExpressions')),
-        compoundExpression([
-          set(ref('compoundAuthExpressions'), obj({})),
-          ...this.compoundRuleNames(rules).map(r => set(ref(`compoundAuthExpressions.${r}`), list([]))),
-        ])
+      iff(not(ref('compoundAuthExpressions')), set(ref('compoundAuthExpressions'), obj({}))),
+      ...this.compoundRuleNames(rules).map(r =>
+        set(ref(`compoundAuthExpressions.${r}`), raw(`$util.defaultIfNull(compoundAuthExpressions.${r}, [])`))
       ),
       set(ref('ownerAuthExpressionValues'), obj({})),
       set(ref('ownerAuthExpressionNames'), obj({})),
@@ -779,19 +767,12 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
             raw('$util.isList($allowedGroups)'),
             iff(
               raw(`$allowedGroups.contains($userGroup)`),
-              rule.and
-                ? compoundExpression([set(ref(variableToSet), raw('true')), this.incrementAuthRuleCounter(rule)])
-                : set(ref(variableToSet), raw('true'))
+              rule.and ? this.incrementAuthRuleCounter(rule) : set(ref(variableToSet), raw('true'))
             )
           ),
           iff(
             raw(`$util.isString($allowedGroups)`),
-            iff(
-              raw(`$allowedGroups == $userGroup`),
-              rule.and
-                ? compoundExpression([set(ref(variableToSet), raw('true')), this.incrementAuthRuleCounter(rule)])
-                : set(ref(variableToSet), raw('true'))
-            )
+            iff(raw(`$allowedGroups == $userGroup`), rule.and ? this.incrementAuthRuleCounter(rule) : set(ref(variableToSet), raw('true')))
           ),
         ])
       );
@@ -844,9 +825,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
           forEach(ref('allowedOwner'), ref(allowedOwnersVariable), [
             iff(
               raw(`$allowedOwner == $identityValue`),
-              rule.and
-                ? compoundExpression([set(ref(variableToSet), raw('true')), this.incrementAuthRuleCounter(rule)])
-                : set(ref(variableToSet), raw('true'))
+              rule.and ? this.incrementAuthRuleCounter(rule) : set(ref(variableToSet), raw('true'))
             ),
           ])
         ),
@@ -854,30 +833,27 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
           raw(`$util.isString($${allowedOwnersVariable})`),
           iff(
             raw(`$${allowedOwnersVariable} == $identityValue`),
-            rule.and
-              ? compoundExpression([set(ref(variableToSet), raw('true')), this.incrementAuthRuleCounter(rule)])
-              : set(ref(variableToSet), raw('true'))
+            rule.and ? this.incrementAuthRuleCounter(rule) : set(ref(variableToSet), raw('true'))
           )
         )
       );
       ruleNumber++;
     }
+
     return block('Owner Authorization Checks', [set(ref(variableToSet), defaultValue), ...ownerAuthorizationExpressions]);
   }
 
   public throwIfSubscriptionUnauthorized(rules: AuthRule[]): Expression {
     const ifUnauthThrow = iff(
-      or([
-        not(
-          parens(
-            or([
-              equals(ref(ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable), raw('true')),
-              equals(ref(ResourceConstants.SNIPPETS.IsOwnerAuthorizedVariable), raw('true')),
-            ])
-          )
-        ),
-        ...this.compoundAuthCheck(rules).map(c => not(c)),
-      ]),
+      not(
+        parens(
+          or([
+            equals(ref(ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable), raw('true')),
+            equals(ref(ResourceConstants.SNIPPETS.IsOwnerAuthorizedVariable), raw('true')),
+            ...this.compoundAuthCheck(rules).map(c => not(c)),
+          ])
+        )
+      ),
       raw('$util.unauthorized()')
     );
     return block('Throw if unauthorized', [ifUnauthThrow]);
@@ -903,7 +879,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
     // check found passing rule counts with and name against expected amounts,
     // or allow if and rule not used to pass auth check.
     let conditions = Object.entries(ruleCompoundNameCounts).map(([key, value]) =>
-      equals(raw(`$util.defaultIfNull($${ResourceConstants.SNIPPETS.CompoundAuthRuleCounts}.${key}, ${value})`), int(value as number))
+      equals(raw(`$util.defaultIfNull($${ResourceConstants.SNIPPETS.CompoundAuthRuleCounts}.${key}, 0)`), int(value as number))
     );
 
     return conditions;
@@ -911,19 +887,18 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
 
   public throwIfUnauthorized(field: FieldDefinitionNode, rules: AuthRule[]): Expression {
     const staticGroupAuthorizedVariable = this.getStaticAuthorizationVariable(field);
+
     const ifUnauthThrow = iff(
-      or([
-        not(
-          parens(
-            or([
-              equals(ref(staticGroupAuthorizedVariable), raw('true')),
-              equals(ref(ResourceConstants.SNIPPETS.IsDynamicGroupAuthorizedVariable), raw('true')),
-              equals(ref(ResourceConstants.SNIPPETS.IsOwnerAuthorizedVariable), raw('true')),
-            ])
-          )
-        ),
-        ...this.compoundAuthCheck(rules).map(c => not(c)),
-      ]),
+      not(
+        parens(
+          or([
+            equals(ref(staticGroupAuthorizedVariable), raw('true')),
+            equals(ref(ResourceConstants.SNIPPETS.IsDynamicGroupAuthorizedVariable), raw('true')),
+            equals(ref(ResourceConstants.SNIPPETS.IsOwnerAuthorizedVariable), raw('true')),
+            ...this.compoundAuthCheck(rules).map(c => not(c)),
+          ])
+        )
+      ),
       raw('$util.unauthorized()')
     );
     return block('Throw if unauthorized', [ifUnauthThrow]);
@@ -1030,14 +1005,10 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
 
   public appendItemIfLocallyAuthorized(rules: AuthRule[]): Expression {
     return iff(
-      and([
-        parens(
-          or([
-            equals(ref(ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable), raw('true')),
-            equals(ref(ResourceConstants.SNIPPETS.IsLocalDynamicGroupAuthorizedVariable), raw('true')),
-            equals(ref(ResourceConstants.SNIPPETS.IsLocalOwnerAuthorizedVariable), raw('true')),
-          ])
-        ),
+      or([
+        equals(ref(ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable), raw('true')),
+        equals(ref(ResourceConstants.SNIPPETS.IsLocalDynamicGroupAuthorizedVariable), raw('true')),
+        equals(ref(ResourceConstants.SNIPPETS.IsLocalOwnerAuthorizedVariable), raw('true')),
         ...this.compoundAuthCheck(rules),
       ]),
       qref('$items.add($item)')
