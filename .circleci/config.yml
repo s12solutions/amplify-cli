@@ -464,6 +464,7 @@ workflows:
                 - release
                 - master
                 - beta
+                - plugin
       - integration_test_js:
           filters:
             branches:
