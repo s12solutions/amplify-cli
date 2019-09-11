@@ -5,12 +5,19 @@ exports[`Test "and" parameter forces all rules to pass for read 1`] = `
 ## [Start] Static Group Authorization Checks **
 #set($isStaticGroupAuthorized = $util.defaultIfNull(
             $isStaticGroupAuthorized, false))
+## Authorization rule: { allow: groups, groups: \\"[\\"Dev\\"]\\"   } **
+#set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
+#set( $allowedGroups = [\\"Dev\\"] )
+#foreach( $userGroup in $userGroups )
+  #if( $allowedGroups.contains($userGroup) )
+    #set( $isStaticGroupAuthorized = true )
+  #end
+#end
 ## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\"]\\"  , and: \\"testing\\" } **
 #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
 #set( $allowedGroups = [\\"Admin\\"] )
 #foreach( $userGroup in $userGroups )
   #if( $allowedGroups.contains($userGroup) )
-    #set( $isStaticGroupAuthorized = true )
     #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
   #end
 #end
@@ -25,13 +32,11 @@ exports[`Test "and" parameter forces all rules to pass for read 1`] = `
 #foreach( $userGroup in $userGroups )
   #if( $util.isList($allowedGroups) )
     #if( $allowedGroups.contains($userGroup) )
-      #set( $isDynamicGroupAuthorized = true )
       #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
     #end
   #end
   #if( $util.isString($allowedGroups) )
     #if( $allowedGroups == $userGroup )
-      #set( $isDynamicGroupAuthorized = true )
       #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
     #end
   #end
@@ -47,14 +52,12 @@ exports[`Test "and" parameter forces all rules to pass for read 1`] = `
 #if( $util.isList($allowedOwners0) )
   #foreach( $allowedOwner in $allowedOwners0 )
     #if( $allowedOwner == $identityValue )
-      #set( $isOwnerAuthorized = true )
       #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
     #end
   #end
 #end
 #if( $util.isString($allowedOwners0) )
   #if( $allowedOwners0 == $identityValue )
-    #set( $isOwnerAuthorized = true )
     #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
   #end
 #end
@@ -62,7 +65,7 @@ exports[`Test "and" parameter forces all rules to pass for read 1`] = `
 
 
 ## [Start] Throw if unauthorized **
-#if( !($isStaticGroupAuthorized == true || $isDynamicGroupAuthorized == true || $isOwnerAuthorized == true) || !$util.defaultIfNull($compoundAuthRuleCounts.testing, 3) == 3 )
+#if( !($isStaticGroupAuthorized == true || $isDynamicGroupAuthorized == true || $isOwnerAuthorized == true || !$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 3) )
   $util.unauthorized()
 #end
 ## [End] Throw if unauthorized **
@@ -75,12 +78,19 @@ exports[`Test "and" parameter forces all rules to pass for read 2`] = `
 ## [Start] Static Group Authorization Checks **
 #set($isStaticGroupAuthorized = $util.defaultIfNull(
             $isStaticGroupAuthorized, false))
+## Authorization rule: { allow: groups, groups: \\"[\\"Dev\\"]\\"   } **
+#set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
+#set( $allowedGroups = [\\"Dev\\"] )
+#foreach( $userGroup in $userGroups )
+  #if( $allowedGroups.contains($userGroup) )
+    #set( $isStaticGroupAuthorized = true )
+  #end
+#end
 ## Authorization rule: { allow: groups, groups: \\"[\\"Admin\\"]\\"  , and: \\"testing\\" } **
 #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
 #set( $allowedGroups = [\\"Admin\\"] )
 #foreach( $userGroup in $userGroups )
   #if( $allowedGroups.contains($userGroup) )
-    #set( $isStaticGroupAuthorized = true )
     #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
   #end
 #end
@@ -99,13 +109,11 @@ exports[`Test "and" parameter forces all rules to pass for read 2`] = `
     #foreach( $userGroup in $userGroups )
       #if( $util.isList($allowedGroups) )
         #if( $allowedGroups.contains($userGroup) )
-          #set( $isLocalDynamicGroupAuthorized = true )
           #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
         #end
       #end
       #if( $util.isString($allowedGroups) )
         #if( $allowedGroups == $userGroup )
-          #set( $isLocalDynamicGroupAuthorized = true )
           #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
         #end
       #end
@@ -121,21 +129,19 @@ exports[`Test "and" parameter forces all rules to pass for read 2`] = `
     #if( $util.isList($allowedOwners0) )
       #foreach( $allowedOwner in $allowedOwners0 )
         #if( $allowedOwner == $identityValue )
-          #set( $isLocalOwnerAuthorized = true )
           #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
         #end
       #end
     #end
     #if( $util.isString($allowedOwners0) )
       #if( $allowedOwners0 == $identityValue )
-        #set( $isLocalOwnerAuthorized = true )
         #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
       #end
     #end
     ## [End] Owner Authorization Checks **
 
 
-    #if( ($isStaticGroupAuthorized == true || $isLocalDynamicGroupAuthorized == true || $isLocalOwnerAuthorized == true) && $util.defaultIfNull($compoundAuthRuleCounts.testing, 3) == 3 )
+    #if( $isStaticGroupAuthorized == true || $isLocalDynamicGroupAuthorized == true || $isLocalOwnerAuthorized == true || $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 3 )
       $util.qr($items.add($item))
     #end
   #end
@@ -156,7 +162,6 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 #set( $allowedGroups = [\\"Admin\\"] )
 #foreach( $userGroup in $userGroups )
   #if( $allowedGroups.contains($userGroup) )
-    #set( $isStaticGroupAuthorized = true )
     #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
   #end
 #end
@@ -171,13 +176,11 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 #foreach( $userGroup in $userGroups )
   #if( $util.isList($allowedGroups) )
     #if( $allowedGroups.contains($userGroup) )
-      #set( $isDynamicGroupAuthorized = true )
       #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
     #end
   #end
   #if( $util.isString($allowedGroups) )
     #if( $allowedGroups == $userGroup )
-      #set( $isDynamicGroupAuthorized = true )
       #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
     #end
   #end
@@ -189,7 +192,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 
 
 ## [Start] Throw if unauthorized **
-#if( !($isStaticGroupAuthorized == true || $isDynamicGroupAuthorized == true || $isOwnerAuthorized == true) || !$util.defaultIfNull($compoundAuthRuleCounts.testing, 2) == 2 )
+#if( !($isStaticGroupAuthorized == true || $isDynamicGroupAuthorized == true || $isOwnerAuthorized == true || !$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2) )
   $util.unauthorized()
 #end
 ## [End] Throw if unauthorized **
@@ -207,7 +210,6 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 #set( $allowedGroups = [\\"Admin\\"] )
 #foreach( $userGroup in $userGroups )
   #if( $allowedGroups.contains($userGroup) )
-    #set( $isStaticGroupAuthorized = true )
     #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
   #end
 #end
@@ -226,13 +228,11 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
     #foreach( $userGroup in $userGroups )
       #if( $util.isList($allowedGroups) )
         #if( $allowedGroups.contains($userGroup) )
-          #set( $isLocalDynamicGroupAuthorized = true )
           #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
         #end
       #end
       #if( $util.isString($allowedGroups) )
         #if( $allowedGroups == $userGroup )
-          #set( $isLocalDynamicGroupAuthorized = true )
           #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
         #end
       #end
@@ -243,7 +243,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
     ## No Owner Authorization Rules **
 
 
-    #if( ($isStaticGroupAuthorized == true || $isLocalDynamicGroupAuthorized == true || $isLocalOwnerAuthorized == true) && $util.defaultIfNull($compoundAuthRuleCounts.testing, 2) == 2 )
+    #if( $isStaticGroupAuthorized == true || $isLocalDynamicGroupAuthorized == true || $isLocalOwnerAuthorized == true || $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2 )
       $util.qr($items.add($item))
     #end
   #end
@@ -264,7 +264,6 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 #set( $allowedGroups = [\\"Admin\\"] )
 #foreach( $userGroup in $userGroups )
   #if( $allowedGroups.contains($userGroup) )
-    #set( $isStaticGroupAuthorized = true )
     #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
   #end
 #end
@@ -273,7 +272,6 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 #set( $allowedGroups = [\\"Dev\\"] )
 #foreach( $userGroup in $userGroups )
   #if( $allowedGroups.contains($userGroup) )
-    #set( $isStaticGroupAuthorized = true )
     #set( $compoundAuthRuleCounts.testing2 = $util.defaultIfNull($compoundAuthRuleCounts.testing2, 0) + 1 )
   #end
 #end
@@ -287,13 +285,11 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 #foreach( $userGroup in $userGroups )
   #if( $util.isList($ctx.args.input.groupField) )
     #if( $ctx.args.input.groupField.contains($userGroup) )
-      #set( $isDynamicGroupAuthorized = true )
       #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
     #end
   #end
   #if( $util.isString($ctx.args.input.groupField) )
     #if( $ctx.args.input.groupField == $userGroup )
-      #set( $isDynamicGroupAuthorized = true )
       #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
     #end
   #end
@@ -309,27 +305,24 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 #if( $util.isList($allowedOwners0) )
   #foreach( $allowedOwner in $allowedOwners0 )
     #if( $allowedOwner == $identityValue )
-      #set( $isOwnerAuthorized = true )
       #set( $compoundAuthRuleCounts.testing2 = $util.defaultIfNull($compoundAuthRuleCounts.testing2, 0) + 1 )
     #end
   #end
 #end
 #if( $util.isString($allowedOwners0) )
   #if( $allowedOwners0 == $identityValue )
-    #set( $isOwnerAuthorized = true )
     #set( $compoundAuthRuleCounts.testing2 = $util.defaultIfNull($compoundAuthRuleCounts.testing2, 0) + 1 )
   #end
 #end
 #if( $util.isNull($allowedOwners0) && (! $ctx.args.input.containsKey(\\"owner\\")) )
   $util.qr($ctx.args.input.put(\\"owner\\", $identityValue))
-  #set( $isOwnerAuthorized = true )
   #set( $compoundAuthRuleCounts.testing2 = $util.defaultIfNull($compoundAuthRuleCounts.testing2, 0) + 1 )
 #end
 ## [End] Owner Authorization Checks **
 
 
 ## [Start] Throw if unauthorized **
-#if( !($isStaticGroupAuthorized == true || $isDynamicGroupAuthorized == true || $isOwnerAuthorized == true) || !$util.defaultIfNull($compoundAuthRuleCounts.testing, 2) == 2 || !$util.defaultIfNull($compoundAuthRuleCounts.testing2, 2) == 2 )
+#if( !($isStaticGroupAuthorized == true || $isDynamicGroupAuthorized == true || $isOwnerAuthorized == true || !$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2 || !$util.defaultIfNull($compoundAuthRuleCounts.testing2, 0) == 2) )
   $util.unauthorized()
 #end
 ## [End] Throw if unauthorized **

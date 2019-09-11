@@ -6,6 +6,7 @@ import { ModelAuthTransformer } from '../ModelAuthTransformer';
 test('Test "and" parameter forces all rules to pass for read', () => {
   const validSchema = `
     type Comment @model @auth(rules: [
+        {allow: groups, groups: ["Dev"], operations: [read]},
         {allow: groups, groups: ["Admin"], operations: [read], and: "testing"},
         {allow: owner, operations: [read], and: "testing"},
         {allow: groups, groupsField: "groupField", operations: [read], and: "testing"}
@@ -29,10 +30,13 @@ test('Test "and" parameter forces all rules to pass for read', () => {
   expect(out.resolvers['Query.getComment.res.vtl']).toContain('Authorization rule:');
   expect(out.resolvers['Query.listComments.res.vtl']).toContain('Authorization rule:');
   expect(out.resolvers['Query.getComment.res.vtl']).toContain(
-    '!$util.defaultIfNull($compoundAuthRuleCounts.testing, 3) == 3'
+    '#set( $isStaticGroupAuthorized = true )'
+  );
+  expect(out.resolvers['Query.getComment.res.vtl']).toContain(
+    '!$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 3'
   );
   expect(out.resolvers['Query.listComments.res.vtl']).toContain(
-    '$util.defaultIfNull($compoundAuthRuleCounts.testing, 3) == 3'
+    '$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 3'
   );
   expect(out.resolvers['Query.getComment.res.vtl']).toMatchSnapshot();
   expect(out.resolvers['Query.listComments.res.vtl']).toMatchSnapshot();
@@ -62,20 +66,20 @@ test('Test "create", "update", "delete" auth operations with "and" parameter for
   const out = transformer.transform(validSchema);
   expect(out).toBeDefined();
   expect(out.resolvers['Query.getPost.res.vtl']).toContain(
-    '!$util.defaultIfNull($compoundAuthRuleCounts.testing, 2) == 2'
+    '!$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2'
   );
 
   expect(out.resolvers['Query.getPost.res.vtl']).toMatchSnapshot();
   expect(out.resolvers['Query.listPosts.res.vtl']).toContain(
-    '$util.defaultIfNull($compoundAuthRuleCounts.testing, 2) == 2'
+    '$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2'
   );
   expect(out.resolvers['Query.listPosts.res.vtl']).toMatchSnapshot();
 
   expect(out.resolvers['Mutation.createPost.req.vtl']).toContain(
-    '!$util.defaultIfNull($compoundAuthRuleCounts.testing, 2) == 2'
+    '!$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2'
   );
   expect(out.resolvers['Mutation.createPost.req.vtl']).toContain(
-    '!$util.defaultIfNull($compoundAuthRuleCounts.testing2, 2) == 2'
+    '!$util.defaultIfNull($compoundAuthRuleCounts.testing2, 0) == 2'
   );
 
   expect(out.resolvers['Mutation.createPost.req.vtl']).toMatchSnapshot();
