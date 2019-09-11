@@ -608,7 +608,7 @@ Either make the field optional, set auth on the object and not the field, or dis
                     fieldIsList
                 )
 
-                const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(field)
+                const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(field, rules)
 
                 // Populate a list of configured authentication providers based on the rules
                 const authModesToCheck = new Set<AuthProvider>();
@@ -918,7 +918,7 @@ All @auth directives used on field definitions are performed when the field is r
                 ownerAuthorizationRules,
                 objectPath
             )
-            const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized()
+            const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(rules)
 
             // If we've any modes to check, then add the authMode check code block
             // to the start of the resolver.
@@ -941,7 +941,7 @@ All @auth directives used on field definitions are performed when the field is r
             // Update the existing resolver with the authorization checks.
             // These statements will be wrapped into an authMode check if statement
             const templateExpressions = [
-        set(ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts), obj({})),
+                set(ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts), obj({})),
                 staticGroupAuthorizationExpression,
                 newline(),
                 dynamicGroupAuthorizationExpression,
@@ -1041,7 +1041,7 @@ All @auth directives used on field definitions are performed when the field is r
                 ResourceConstants.SNIPPETS.IsLocalOwnerAuthorizedVariable,
                 raw(`false`)
             )
-            const appendIfLocallyAuthorized = this.resources.appendItemIfLocallyAuthorized()
+            const appendIfLocallyAuthorized = this.resources.appendItemIfLocallyAuthorized(rules)
 
             const ifNotStaticallyAuthedFilterObjects = iff(
                 rules.some(r => r.and) 
@@ -1084,7 +1084,7 @@ All @auth directives used on field definitions are performed when the field is r
 
             // These statements will be wrapped into an authMode check if statement
             const templateExpressions = [
-        set(ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts), obj({})),
+                set(ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts), obj({})),
                 staticGroupAuthorizationExpression,
                 newline(),
                 comment('[Start] If not static group authorized, filter items'),
@@ -1194,7 +1194,7 @@ All @auth directives used on field definitions are performed when the field is r
 
                 // These statements will be wrapped into an authMode check if statement
                 const authCheckExpressions = [
-          set(ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts), obj({})),
+                    set(ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts), obj({})),
                     staticGroupAuthorizationExpression,
                     newline(),
                     dynamicGroupAuthorizationExpression,
@@ -1214,7 +1214,8 @@ All @auth directives used on field definitions are performed when the field is r
                 const templateParts = [
                     print(compoundExpression(expressions)),
                     resolver.Properties.RequestMappingTemplate
-                ]
+                ];
+
                 resolver.Properties.RequestMappingTemplate = templateParts.join('\n\n')
                 ctx.setResource(resolverResourceId, resolver)
             }
@@ -1288,7 +1289,7 @@ All @auth directives used on field definitions are performed when the field is r
                 // are done before calling PutItem.
                 const dynamicGroupAuthorizationExpression = this.resources.dynamicGroupAuthorizationExpressionForUpdateOrDeleteOperations(
                     dynamicGroupAuthorizationRules,
-          staticGroupAuthorizationRules,
+                    staticGroupAuthorizationRules,
                     field ? field.name.value : undefined
                 )
 
@@ -1301,7 +1302,7 @@ All @auth directives used on field definitions are performed when the field is r
                 }
                 const ownerAuthorizationExpression = this.resources.ownerAuthorizationExpressionForUpdateOrDeleteOperations(
                     ownerAuthorizationRules,
-          staticGroupAuthorizationRules,
+                    staticGroupAuthorizationRules,
                     fieldIsList,
                     field ? field.name.value : undefined
                 )
@@ -1309,11 +1310,8 @@ All @auth directives used on field definitions are performed when the field is r
                 const collectAuthCondition = this.resources.collectAuthCondition()
                 const staticGroupAuthorizedVariable = this.resources.getStaticAuthorizationVariable(field);
                 const ifNotStaticallyAuthedCreateAuthCondition = iff(
-                    rules.some(r => r.and) 
-            ? raw('true')
-            :raw(`! $${staticGroupAuthorizedVariable}`),
+                    raw(`! $${staticGroupAuthorizedVariable}`),
                     compoundExpression([
-                    // TODO: set default and count
                         dynamicGroupAuthorizationExpression,
                         newline(),
                         ownerAuthorizationExpression,
@@ -1345,6 +1343,7 @@ All @auth directives used on field definitions are performed when the field is r
 
                 // These statements will be wrapped into an authMode check if statement
                 const authorizationLogic = compoundExpression([
+                    set(ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts), raw(`$util.defaultIfNull($${ResourceConstants.SNIPPETS.CompoundAuthRuleCounts}, {})`)),
                     staticGroupAuthorizationExpression,
                     newline(),
                     ifNotStaticallyAuthedCreateAuthCondition,
@@ -1565,7 +1564,7 @@ All @auth directives used on field definitions are performed when the field is r
                 const ownerAuthorizationExpression = this.resources.ownerAuthorizationExpressionForSubscriptions(
                     ownerAuthorizationRules);
 
-                const throwIfUnauthorizedExpression = this.resources.throwIfSubscriptionUnauthorized();
+                const throwIfUnauthorizedExpression = this.resources.throwIfSubscriptionUnauthorized(rules);
 
                 // Populate a list of configured authentication providers based on the rules
                 const authModesToCheck = new Set<AuthProvider>();

@@ -15,5 +15,5 @@ export interface AuthRule {
     operations?: ModelOperation[];
     queries?: ModelQuery[];
     mutations?: ModelMutation[];
-  and?: string;
+    and?: string;
 }
