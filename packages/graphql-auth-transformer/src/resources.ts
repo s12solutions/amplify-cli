@@ -265,6 +265,7 @@ export class ResourceFactory {
         );
       }
     }
+
     const staticGroupAuthorizedVariable = this.getStaticAuthorizationVariable(field);
 
     // tslint:disable-next-line
@@ -272,26 +273,6 @@ export class ResourceFactory {
       raw(`#set($${staticGroupAuthorizedVariable} = $util.defaultIfNull(
             $${staticGroupAuthorizedVariable}, false))`),
       ...groupAuthorizationExpressions,
-    ]);
-  }
-
-  /**
-   * Given a set of dynamic group authorization rules verifies that input
-   * value satisfies at least one dynamic group authorization rule.
-   * @param rules The list of authorization rules.
-   * @param variableToCheck The name of the value containing the input.
-   * @param variableToSet The name of the variable to set when auth is satisfied.
-   */
-  public dynamicGroupAuthorizationExpressionForCreateOperations(
-    rules: AuthRule[],
-    variableToCheck: string = 'ctx.args.input',
-    variableToSet: string = ResourceConstants.SNIPPETS.IsDynamicGroupAuthorizedVariable
-  ): Expression {
-    if (!rules || rules.length === 0) {
-      return comment(`No Dynamic Group Authorization Rules`);
-    }
-    return block('Dynamic Group Authorization Checks', [
-      this.dynamicAuthorizationExpressionForCreate(rules, variableToCheck, variableToSet),
     ]);
   }
 
@@ -333,10 +314,11 @@ groupsField: "${rule.groupsField || DEFAULT_GROUPS_FIELD}", groupClaim: "${rule.
     for (const rule of rules) {
       // for loop do check of rules here
       const groupsAttribute = rule.groupsField || DEFAULT_GROUPS_FIELD;
+      const groupClaimAttribute = rule.groupClaim || DEFAULT_GROUP_CLAIM;
       groupAuthorizationExpressions = groupAuthorizationExpressions.concat(
         formatComment
           ? comment(formatComment(rule))
-          : comment(`Authorization rule: { allow: ${rule.allow}, groupsField: "${groupsAttribute}" }`),
+          : comment(`Authorization rule: { allow: ${rule.allow}, groupsField: "${groupsAttribute}", groupClaim: "${groupClaimAttribute}"`),
         this.setUserGroups(rule.groupClaim),
         set(ref(variableToSet), raw(`$util.defaultIfNull($${variableToSet}, false)`)),
         forEach(ref('userGroup'), ref('userGroups'), [
@@ -668,8 +650,9 @@ identityClaim: "${rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_F
     let groupAuthorizationExpressions = [];
     for (const rule of rules) {
       const groupsAttribute = rule.groupsField || DEFAULT_GROUPS_FIELD;
+      const groupClaimAttribute = rule.groupClaim || DEFAULT_GROUP_CLAIM;
       groupAuthorizationExpressions = groupAuthorizationExpressions.concat(
-        comment(`Authorization rule: { allow: ${rule.allow}, groupsField: "${groupsAttribute}" }`),
+        comment(`Authorization rule: { allow: ${rule.allow}, groupsField: "${groupsAttribute}", groupClaim: "${groupClaimAttribute}" }`),
         set(ref('allowedGroups'), ref(`util.defaultIfNull($${variableToCheck}.${groupsAttribute}, [])`)),
         this.setUserGroups(rule.groupClaim),
         forEach(ref('userGroup'), ref('userGroups'), [
@@ -871,6 +854,7 @@ identityClaim: "${rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_F
         ),
       ]);
     }
+
     return set(ref('userGroups'), raw(`$util.defaultIfNull($ctx.identity.claims.get("${DEFAULT_GROUP_CLAIM}"), [])`));
   }
 
@@ -882,6 +866,7 @@ identityClaim: "${rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_F
       TypeName: subscriptionTypeName,
       RequestMappingTemplate: print(
         raw(`{
+
     "version": "2018-05-29",
     "payload": {}
 }`)
