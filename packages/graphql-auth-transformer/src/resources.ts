@@ -880,7 +880,12 @@ identityClaim: "${rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_F
                 set(ref('userGroup'), raw(`$util.defaultIfNull($ctx.identity.claims.get("${customGroup}"), [])`)),
                 iff(
                     raw('$util.isString($userGroup)'),
-                    set(ref('userGroup'), raw('[$userGroup]')),
+                    ifElse(raw('$util.isList($util.parseJson($userGroup))'),
+                        set(ref('userGroup'), raw('$util.parseJson($userGroup)')),
+                        set(ref('userGroup'), raw('[$userGroup]'))
+                    )
+                        
+                
                 ),
             ]);
         }
