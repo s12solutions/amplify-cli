@@ -1194,6 +1194,7 @@ All @auth directives used on field definitions are performed when the field is r
 
                 // These statements will be wrapped into an authMode check if statement
                 const authCheckExpressions = [
+                    this.resources.auditExpression(rules, this.config.authConfig.defaultAuthentication.authenticationType),
                     set(ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts), obj({})),
                     staticGroupAuthorizationExpression,
                     newline(),
@@ -1364,6 +1365,13 @@ All @auth directives used on field definitions are performed when the field is r
                         compoundExpression(expressions)),
                     resolver.Properties.RequestMappingTemplate
                 ]
+
+                if (!field) {
+                    templateParts.unshift(
+                        print(this.resources.auditExpression(rules, this.config.authConfig.defaultAuthentication.authenticationType))
+                    )
+                }
+    
                 resolver.Properties.RequestMappingTemplate = templateParts.join('\n\n')
                 ctx.setResource(resolverResourceId, resolver)
             }

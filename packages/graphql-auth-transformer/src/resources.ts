@@ -13,6 +13,7 @@ import { InvalidDirectiveError } from 'graphql-transformer-core';
 import GraphQLAPI, { UserPoolConfig, GraphQLApiProperties, OpenIDConnectConfig, AdditionalAuthenticationProvider } from './graphQlApi'
 import * as Transformer from './ModelAuthTransformer'
 import { FieldDefinitionNode } from 'graphql';
+import { AppSyncAuthMode } from './ModelAuthTransformer';
 
 import {
     DEFAULT_OWNER_FIELD,
@@ -219,6 +220,27 @@ export class ResourceFactory {
             Type: 'NONE'
         })
     }
+
+    public auditExpression(rules: AuthRule[], authMode: AppSyncAuthMode): Expression {
+        const identities = [...new Set(
+            rules.filter(r => r.identityClaim || r.identityField)
+            .map(r => replaceIfUsername(r.identityClaim))
+            .concat(authMode === 'AMAZON_COGNITO_USER_POOLS' ? 'cognito:username' : [])
+        )]
+
+        let auditExpression = [
+            qref('$context.args.input.put("updatedAt", $util.time.nowISO8601())')
+        ]
+
+        if(identities.length > 1) {
+            auditExpression = auditExpression.concat(qref(`$context.args.input.put("updatedBy", [${identities.map(i => "$util.defaultIfNull($ctx.identity.claims.get(\"" + i +"\"), " + NONE_VALUE+ ")")}] )`));
+        } else if (identities.length === 1) {
+            auditExpression = auditExpression.concat(qref(`$context.args.input.put("updatedBy", $util.defaultIfNull($ctx.identity.claims.get("${identities[0]}"), "${NONE_VALUE}"))`));
+        }
+
+        return block('Audit Timestamps and Users', auditExpression);
+    }
+
 
     /**
      * Builds a VTL expression that will set the
