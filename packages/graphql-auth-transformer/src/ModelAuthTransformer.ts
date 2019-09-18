@@ -608,7 +608,7 @@ Either make the field optional, set auth on the object and not the field, or dis
                     fieldIsList
                 )
 
-                const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(field, rules)
+                const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(rules, field)
 
                 // Populate a list of configured authentication providers based on the rules
                 const authModesToCheck = new Set<AuthProvider>();
@@ -1045,14 +1045,15 @@ All @auth directives used on field definitions are performed when the field is r
 
             const ifNotStaticallyAuthedFilterObjects = iff(
                 rules.some(r => r.and) 
-            ? raw('true')
-            : raw(`! $${ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable}`),
+                ? raw('true')
+                : raw(`! $${ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable}`),
                 compoundExpression([
                     set(ref('items'), list([])),
                     forEach(
                         ref('item'),
                         ref('ctx.result.items'),
                         [
+                            set(ref(ResourceConstants.SNIPPETS.StaticCompoundAuthRuleCounts), ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts)),
                             dynamicGroupAuthorizationExpression,
                             newline(),
                             ownerAuthorizationExpression,
