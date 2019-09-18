@@ -10,8 +10,9 @@ exports[`Test "and" parameter forces all rules to pass for read 1`] = `
 #if( $authMode == \\"userPools\\" )
   #set( $compoundAuthRuleCounts = {} )
   ## [Start] Static Group Authorization Checks **
-  #set($isStaticGroupAuthorized = false)
-  ## Authorization rule: { allow: groups, groups: [\\"Dev\\"], groupClaim: \\"cognito:groups\\"} **
+  #set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+  ## Authorization rule: { allow: groups, groups: [\\"Dev\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Dev\\"] )
   #foreach( $userGroup in $userGroups )
@@ -20,7 +21,7 @@ exports[`Test "and" parameter forces all rules to pass for read 1`] = `
       #break
     #end
   #end
-  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\"} **
+  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
   #foreach( $userGroup in $userGroups )
@@ -73,7 +74,7 @@ exports[`Test "and" parameter forces all rules to pass for read 1`] = `
 
 
   ## [Start] Throw if unauthorized **
-  #if( !($isStaticGroupAuthorized == true || $isDynamicGroupAuthorized == true || $isOwnerAuthorized == true || !$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 3) )
+  #if( !($isStaticGroupAuthorized == true || $isDynamicGroupAuthorized == true || $isOwnerAuthorized == true || $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 3) )
     $util.unauthorized()
   #end
   ## [End] Throw if unauthorized **
@@ -93,8 +94,9 @@ exports[`Test "and" parameter forces all rules to pass for read 2`] = `
 #if( $authMode == \\"userPools\\" )
   #set( $compoundAuthRuleCounts = {} )
   ## [Start] Static Group Authorization Checks **
-  #set($isStaticGroupAuthorized = false)
-  ## Authorization rule: { allow: groups, groups: [\\"Dev\\"], groupClaim: \\"cognito:groups\\"} **
+  #set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+  ## Authorization rule: { allow: groups, groups: [\\"Dev\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Dev\\"] )
   #foreach( $userGroup in $userGroups )
@@ -103,7 +105,7 @@ exports[`Test "and" parameter forces all rules to pass for read 2`] = `
       #break
     #end
   #end
-  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\"} **
+  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
   #foreach( $userGroup in $userGroups )
@@ -119,6 +121,7 @@ exports[`Test "and" parameter forces all rules to pass for read 2`] = `
   #if( true )
     #set( $items = [] )
     #foreach( $item in $ctx.result.items )
+      #set( $staticCompoundAuthRuleCounts = $compoundAuthRuleCounts )
       ## [Start] Dynamic Group Authorization Checks **
       #set( $isLocalDynamicGroupAuthorized = false )
       ## Authorization rule: { allow: groups, groupsField: \\"groupField\\", groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
@@ -127,12 +130,12 @@ exports[`Test "and" parameter forces all rules to pass for read 2`] = `
       #foreach( $userGroup in $userGroups )
         #if( $util.isList($allowedGroups) )
           #if( $allowedGroups.contains($userGroup) )
-            #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
+            #set( $staticCompoundAuthRuleCounts.testing = $util.defaultIfNull($staticCompoundAuthRuleCounts.testing, 0) + 1 )
           #end
         #end
         #if( $util.isString($allowedGroups) )
           #if( $allowedGroups == $userGroup )
-            #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
+            #set( $staticCompoundAuthRuleCounts.testing = $util.defaultIfNull($staticCompoundAuthRuleCounts.testing, 0) + 1 )
           #end
         #end
       #end
@@ -147,19 +150,19 @@ exports[`Test "and" parameter forces all rules to pass for read 2`] = `
       #if( $util.isList($allowedOwners0) )
         #foreach( $allowedOwner in $allowedOwners0 )
           #if( $allowedOwner == $identityValue )
-            #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
+            #set( $staticCompoundAuthRuleCounts.testing = $util.defaultIfNull($staticCompoundAuthRuleCounts.testing, 0) + 1 )
           #end
         #end
       #end
       #if( $util.isString($allowedOwners0) )
         #if( $allowedOwners0 == $identityValue )
-          #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
+          #set( $staticCompoundAuthRuleCounts.testing = $util.defaultIfNull($staticCompoundAuthRuleCounts.testing, 0) + 1 )
         #end
       #end
       ## [End] Owner Authorization Checks **
 
 
-      #if( $isStaticGroupAuthorized == true || $isLocalDynamicGroupAuthorized == true || $isLocalOwnerAuthorized == true || $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 3 )
+      #if( $isStaticGroupAuthorized == true || $isLocalDynamicGroupAuthorized == true || $isLocalOwnerAuthorized == true || $util.defaultIfNull($staticCompoundAuthRuleCounts.testing, 0) == 3 )
         $util.qr($items.add($item))
       #end
     #end
@@ -182,8 +185,9 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 #if( $authMode == \\"userPools\\" )
   #set( $compoundAuthRuleCounts = {} )
   ## [Start] Static Group Authorization Checks **
-  #set($isStaticGroupAuthorized = false)
-  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\"} **
+  #set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
   #foreach( $userGroup in $userGroups )
@@ -219,7 +223,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 
 
   ## [Start] Throw if unauthorized **
-  #if( !($isStaticGroupAuthorized == true || $isDynamicGroupAuthorized == true || $isOwnerAuthorized == true || !$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2) )
+  #if( !($isStaticGroupAuthorized == true || $isDynamicGroupAuthorized == true || $isOwnerAuthorized == true || $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2) )
     $util.unauthorized()
   #end
   ## [End] Throw if unauthorized **
@@ -239,8 +243,9 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 #if( $authMode == \\"userPools\\" )
   #set( $compoundAuthRuleCounts = {} )
   ## [Start] Static Group Authorization Checks **
-  #set($isStaticGroupAuthorized = false)
-  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\"} **
+  #set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
   #foreach( $userGroup in $userGroups )
@@ -256,6 +261,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
   #if( true )
     #set( $items = [] )
     #foreach( $item in $ctx.result.items )
+      #set( $staticCompoundAuthRuleCounts = $compoundAuthRuleCounts )
       ## [Start] Dynamic Group Authorization Checks **
       #set( $isLocalDynamicGroupAuthorized = false )
       ## Authorization rule: { allow: groups, groupsField: \\"groupField\\", groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
@@ -264,12 +270,12 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
       #foreach( $userGroup in $userGroups )
         #if( $util.isList($allowedGroups) )
           #if( $allowedGroups.contains($userGroup) )
-            #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
+            #set( $staticCompoundAuthRuleCounts.testing = $util.defaultIfNull($staticCompoundAuthRuleCounts.testing, 0) + 1 )
           #end
         #end
         #if( $util.isString($allowedGroups) )
           #if( $allowedGroups == $userGroup )
-            #set( $compoundAuthRuleCounts.testing = $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) + 1 )
+            #set( $staticCompoundAuthRuleCounts.testing = $util.defaultIfNull($staticCompoundAuthRuleCounts.testing, 0) + 1 )
           #end
         #end
       #end
@@ -279,7 +285,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
       ## No Owner Authorization Rules **
 
 
-      #if( $isStaticGroupAuthorized == true || $isLocalDynamicGroupAuthorized == true || $isLocalOwnerAuthorized == true || $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2 )
+      #if( $isStaticGroupAuthorized == true || $isLocalDynamicGroupAuthorized == true || $isLocalOwnerAuthorized == true || $util.defaultIfNull($staticCompoundAuthRuleCounts.testing, 0) == 2 )
         $util.qr($items.add($item))
       #end
     #end
@@ -306,8 +312,9 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
   ## [End] Audit Timestamps and Users **
   #set( $compoundAuthRuleCounts = {} )
   ## [Start] Static Group Authorization Checks **
-  #set($isStaticGroupAuthorized = false)
-  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\"} **
+  #set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
   #foreach( $userGroup in $userGroups )
@@ -316,7 +323,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
       #break
     #end
   #end
-  ## Authorization rule: { allow: groups, groups: [\\"Dev\\"], groupClaim: \\"cognito:groups\\", and: \\"testing2\\"} **
+  ## Authorization rule: { allow: groups, groups: [\\"Dev\\"], groupClaim: \\"cognito:groups\\", and: \\"testing2\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Dev\\"] )
   #foreach( $userGroup in $userGroups )
@@ -372,7 +379,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 
 
   ## [Start] Throw if unauthorized **
-  #if( !($isStaticGroupAuthorized == true || $isDynamicGroupAuthorized == true || $isOwnerAuthorized == true || !$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2 || !$util.defaultIfNull($compoundAuthRuleCounts.testing2, 0) == 2) )
+  #if( !($isStaticGroupAuthorized == true || $isDynamicGroupAuthorized == true || $isOwnerAuthorized == true || $util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 2 || $util.defaultIfNull($compoundAuthRuleCounts.testing2, 0) == 2) )
     $util.unauthorized()
   #end
   ## [End] Throw if unauthorized **
@@ -415,8 +422,9 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
 #if( $authMode == \\"userPools\\" )
   #set( $compoundAuthRuleCounts = $util.defaultIfNull($compoundAuthRuleCounts, {}) )
   ## [Start] Static Group Authorization Checks **
-  #set($isStaticGroupAuthorized = false)
-  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\"} **
+  #set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
   #foreach( $userGroup in $userGroups )
@@ -425,7 +433,7 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
       #break
     #end
   #end
-  ## Authorization rule: { allow: groups, groups: [\\"Dev\\"], groupClaim: \\"cognito:groups\\", and: \\"testing2\\"} **
+  ## Authorization rule: { allow: groups, groups: [\\"Dev\\"], groupClaim: \\"cognito:groups\\", and: \\"testing2\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Dev\\"] )
   #foreach( $userGroup in $userGroups )
@@ -478,11 +486,11 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
 
 
     ## [Start] Collect Auth Condition **
-    #set( $authCondition = {
+    #set( $authCondition = $util.defaultIfNull($authCondition, {
   \\"expression\\": \\"\\",
   \\"expressionNames\\": {},
   \\"expressionValues\\": {}
-} )
+}) )
     #set( $totalAuthExpression = \\"\\" )
     ## Add dynamic group auth conditions if they exist **
     #if( $groupAuthExpressions )
@@ -543,14 +551,18 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
     #end
     ## Set final expression if it has changed. **
     #if( $totalAuthExpression != \\"\\" )
-      #set( $authCondition.expression = \\"($totalAuthExpression)\\" )
+      #if( $util.isNullOrEmpty($authCondition.expression) )
+        #set( $authCondition.expression = \\"($totalAuthExpression)\\" )
+      #else
+        #set( $authCondition.expression = \\"$authCondition.expression AND ($totalAuthExpression)\\" )
+      #end
     #end
     ## [End] Collect Auth Condition **
   #end
 
 
   ## [Start] Throw if unauthorized **
-  #if( !($isStaticGroupAuthorized == true || ($authCondition && $authCondition.expression != \\"\\")) )
+  #if( !($isStaticGroupAuthorized == true || ($totalAuthExpression != \\"\\")) )
     $util.unauthorized()
   #end
   ## [End] Throw if unauthorized **
@@ -699,8 +711,9 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
 #if( $authMode == \\"userPools\\" )
   #set( $compoundAuthRuleCounts = $util.defaultIfNull($compoundAuthRuleCounts, {}) )
   ## [Start] Static Group Authorization Checks **
-  #set($isStaticGroupAuthorized = false)
-  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\"} **
+  #set($isStaticGroupAuthorized = $util.defaultIfNull(
+            $isStaticGroupAuthorized, false))
+  ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
   #foreach( $userGroup in $userGroups )
@@ -709,7 +722,7 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
       #break
     #end
   #end
-  ## Authorization rule: { allow: groups, groups: [\\"Dev\\"], groupClaim: \\"cognito:groups\\", and: \\"testing2\\"} **
+  ## Authorization rule: { allow: groups, groups: [\\"Dev\\"], groupClaim: \\"cognito:groups\\", and: \\"testing2\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Dev\\"] )
   #foreach( $userGroup in $userGroups )
@@ -762,11 +775,11 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
 
 
     ## [Start] Collect Auth Condition **
-    #set( $authCondition = {
+    #set( $authCondition = $util.defaultIfNull($authCondition, {
   \\"expression\\": \\"\\",
   \\"expressionNames\\": {},
   \\"expressionValues\\": {}
-} )
+}) )
     #set( $totalAuthExpression = \\"\\" )
     ## Add dynamic group auth conditions if they exist **
     #if( $groupAuthExpressions )
@@ -827,14 +840,18 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
     #end
     ## Set final expression if it has changed. **
     #if( $totalAuthExpression != \\"\\" )
-      #set( $authCondition.expression = \\"($totalAuthExpression)\\" )
+      #if( $util.isNullOrEmpty($authCondition.expression) )
+        #set( $authCondition.expression = \\"($totalAuthExpression)\\" )
+      #else
+        #set( $authCondition.expression = \\"$authCondition.expression AND ($totalAuthExpression)\\" )
+      #end
     #end
     ## [End] Collect Auth Condition **
   #end
 
 
   ## [Start] Throw if unauthorized **
-  #if( !($isStaticGroupAuthorized == true || ($authCondition && $authCondition.expression != \\"\\")) )
+  #if( !($isStaticGroupAuthorized == true || ($totalAuthExpression != \\"\\")) )
     $util.unauthorized()
   #end
   ## [End] Throw if unauthorized **
@@ -903,8 +920,9 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
   #if( $authMode == \\"userPools\\" )
     #set( $compoundAuthRuleCounts = $util.defaultIfNull($compoundAuthRuleCounts, {}) )
     ## [Start] Static Group Authorization Checks **
-    #set($isStaticGroupAuthorized = false)
-    ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"cRule\\"} **
+    #set($protectedByC_isStaticGroupAuthorized = $util.defaultIfNull(
+            $protectedByC_isStaticGroupAuthorized, false))
+    ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"cRule\\" } **
     #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
     #set( $allowedGroups = [\\"Admin\\"] )
     #foreach( $userGroup in $userGroups )
@@ -916,7 +934,7 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
     ## [End] Static Group Authorization Checks **
 
 
-    #if( ! $isStaticGroupAuthorized )
+    #if( ! $protectedByC_isStaticGroupAuthorized )
       ## No dynamic group authorization rules for field \\"protectedByC\\" **
 
 
@@ -924,11 +942,11 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
 
 
       ## [Start] Collect Auth Condition **
-      #set( $authCondition = {
+      #set( $authCondition = $util.defaultIfNull($authCondition, {
   \\"expression\\": \\"\\",
   \\"expressionNames\\": {},
   \\"expressionValues\\": {}
-} )
+}) )
       #set( $totalAuthExpression = \\"\\" )
       ## Add dynamic group auth conditions if they exist **
       #if( $groupAuthExpressions )
@@ -989,14 +1007,18 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
       #end
       ## Set final expression if it has changed. **
       #if( $totalAuthExpression != \\"\\" )
-        #set( $authCondition.expression = \\"($totalAuthExpression)\\" )
+        #if( $util.isNullOrEmpty($authCondition.expression) )
+          #set( $authCondition.expression = \\"($totalAuthExpression)\\" )
+        #else
+          #set( $authCondition.expression = \\"$authCondition.expression AND ($totalAuthExpression)\\" )
+        #end
       #end
       ## [End] Collect Auth Condition **
     #end
 
 
     ## [Start] Throw if unauthorized **
-    #if( !($isStaticGroupAuthorized == true || ($authCondition && $authCondition.expression != \\"\\")) )
+    #if( !($protectedByC_isStaticGroupAuthorized == true || ($totalAuthExpression != \\"\\")) )
       $util.unauthorized()
     #end
     ## [End] Throw if unauthorized **
@@ -1016,7 +1038,7 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
     ## No Static Group Authorization Rules **
 
 
-    #if( ! $isStaticGroupAuthorized )
+    #if( ! $protectedByA_isStaticGroupAuthorized )
       ## No dynamic group authorization rules for field \\"protectedByA\\" **
 
 
@@ -1030,19 +1052,19 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
       #set( $ownerAuthExpressionNames = {} )
       ## Authorization rule for field \\"protectedByA\\": { allow: owner, ownerField: \\"id\\", identityClaim: \\"cognito:username\\"  , and: \\"aRule\\" } **
       #if( true )
-        $util.qr($compoundAuthExpressions.aRule.add(\\"#owner0 = :identity0\\"))
+        $util.qr($compoundAuthExpressions.aRule.add(\\"#protectedByA_owner0 = :protectedByA_identity0\\"))
       #end
-      $util.qr($ownerAuthExpressionNames.put(\\"#owner0\\", \\"id\\"))
-      $util.qr($ownerAuthExpressionValues.put(\\":identity0\\", $util.dynamodb.toDynamoDB($util.defaultIfNull($ctx.identity.claims.get(\\"username\\"), $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:username\\"), \\"___xamznone____\\")))))
+      $util.qr($ownerAuthExpressionNames.put(\\"#protectedByA_owner0\\", \\"id\\"))
+      $util.qr($ownerAuthExpressionValues.put(\\":protectedByA_identity0\\", $util.dynamodb.toDynamoDB($util.defaultIfNull($ctx.identity.claims.get(\\"username\\"), $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:username\\"), \\"___xamznone____\\")))))
       ## [End] Owner Authorization Checks **
 
 
       ## [Start] Collect Auth Condition **
-      #set( $authCondition = {
+      #set( $authCondition = $util.defaultIfNull($authCondition, {
   \\"expression\\": \\"\\",
   \\"expressionNames\\": {},
   \\"expressionValues\\": {}
-} )
+}) )
       #set( $totalAuthExpression = \\"\\" )
       ## Add dynamic group auth conditions if they exist **
       #if( $groupAuthExpressions )
@@ -1103,14 +1125,18 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
       #end
       ## Set final expression if it has changed. **
       #if( $totalAuthExpression != \\"\\" )
-        #set( $authCondition.expression = \\"($totalAuthExpression)\\" )
+        #if( $util.isNullOrEmpty($authCondition.expression) )
+          #set( $authCondition.expression = \\"($totalAuthExpression)\\" )
+        #else
+          #set( $authCondition.expression = \\"$authCondition.expression AND ($totalAuthExpression)\\" )
+        #end
       #end
       ## [End] Collect Auth Condition **
     #end
 
 
     ## [Start] Throw if unauthorized **
-    #if( !($isStaticGroupAuthorized == true || ($authCondition && $authCondition.expression != \\"\\")) )
+    #if( !($protectedByA_isStaticGroupAuthorized == true || ($totalAuthExpression != \\"\\")) )
       $util.unauthorized()
     #end
     ## [End] Throw if unauthorized **
@@ -1130,7 +1156,7 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
     ## No Static Group Authorization Rules **
 
 
-    #if( ! $isStaticGroupAuthorized )
+    #if( ! $protectedByB_isStaticGroupAuthorized )
       ## No dynamic group authorization rules for field \\"protectedByB\\" **
 
 
@@ -1144,19 +1170,19 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
       #set( $ownerAuthExpressionNames = {} )
       ## Authorization rule for field \\"protectedByB\\": { allow: owner, ownerField: \\"id\\", identityClaim: \\"cognito:username\\"  , and: \\"bRule\\" } **
       #if( true )
-        $util.qr($compoundAuthExpressions.bRule.add(\\"#owner0 = :identity0\\"))
+        $util.qr($compoundAuthExpressions.bRule.add(\\"#protectedByB_owner0 = :protectedByB_identity0\\"))
       #end
-      $util.qr($ownerAuthExpressionNames.put(\\"#owner0\\", \\"id\\"))
-      $util.qr($ownerAuthExpressionValues.put(\\":identity0\\", $util.dynamodb.toDynamoDB($util.defaultIfNull($ctx.identity.claims.get(\\"username\\"), $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:username\\"), \\"___xamznone____\\")))))
+      $util.qr($ownerAuthExpressionNames.put(\\"#protectedByB_owner0\\", \\"id\\"))
+      $util.qr($ownerAuthExpressionValues.put(\\":protectedByB_identity0\\", $util.dynamodb.toDynamoDB($util.defaultIfNull($ctx.identity.claims.get(\\"username\\"), $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:username\\"), \\"___xamznone____\\")))))
       ## [End] Owner Authorization Checks **
 
 
       ## [Start] Collect Auth Condition **
-      #set( $authCondition = {
+      #set( $authCondition = $util.defaultIfNull($authCondition, {
   \\"expression\\": \\"\\",
   \\"expressionNames\\": {},
   \\"expressionValues\\": {}
-} )
+}) )
       #set( $totalAuthExpression = \\"\\" )
       ## Add dynamic group auth conditions if they exist **
       #if( $groupAuthExpressions )
@@ -1217,14 +1243,18 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
       #end
       ## Set final expression if it has changed. **
       #if( $totalAuthExpression != \\"\\" )
-        #set( $authCondition.expression = \\"($totalAuthExpression)\\" )
+        #if( $util.isNullOrEmpty($authCondition.expression) )
+          #set( $authCondition.expression = \\"($totalAuthExpression)\\" )
+        #else
+          #set( $authCondition.expression = \\"$authCondition.expression AND ($totalAuthExpression)\\" )
+        #end
       #end
       ## [End] Collect Auth Condition **
     #end
 
 
     ## [Start] Throw if unauthorized **
-    #if( !($isStaticGroupAuthorized == true || ($authCondition && $authCondition.expression != \\"\\")) )
+    #if( !($protectedByB_isStaticGroupAuthorized == true || ($totalAuthExpression != \\"\\")) )
       $util.unauthorized()
     #end
     ## [End] Throw if unauthorized **

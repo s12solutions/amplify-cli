@@ -106,5 +106,6 @@ export class ResourceConstants {
     IsOwnerAuthorizedVariable: 'isOwnerAuthorized',
     IsLocalOwnerAuthorizedVariable: 'isLocalOwnerAuthorized',
     CompoundAuthRuleCounts: 'compoundAuthRuleCounts',
+    StaticCompoundAuthRuleCounts: 'staticCompoundAuthRuleCounts',
   };
 }
