@@ -36,6 +36,7 @@ import GraphQLApi, {
 import * as Transformer from './ModelAuthTransformer';
 
 import { FieldDefinitionNode } from 'graphql';
+import { AppSyncAuthMode } from './ModelAuthTransformer';
 
 import { DEFAULT_OWNER_FIELD, DEFAULT_IDENTITY_FIELD, DEFAULT_GROUPS_FIELD, DEFAULT_GROUP_CLAIM } from './constants';
 import ManagedPolicy from 'cloudform-types/types/iam/managedPolicy';

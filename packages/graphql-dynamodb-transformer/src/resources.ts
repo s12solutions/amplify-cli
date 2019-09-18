@@ -446,6 +446,9 @@ export class ResourceFactory {
       TypeName: mutationTypeName,
       RequestMappingTemplate: print(
         compoundExpression([
+          comment('Automatically set the updatedAt timestamp, typename'),
+          qref('$context.args.input.put("updatedAt", $util.time.nowISO8601())'),
+          qref(`$context.args.input.put("__typename", "${type}")`),
           ifElse(
             raw(`$${ResourceConstants.SNIPPETS.AuthCondition} && $${ResourceConstants.SNIPPETS.AuthCondition}.expression != ""`),
             compoundExpression([
@@ -495,9 +498,14 @@ export class ResourceFactory {
               )
             )
           ),
-          comment('Automatically set the updatedAt timestamp.'),
-          qref('$context.args.input.put("updatedAt", $util.defaultIfNull($ctx.args.input.updatedAt, $util.time.nowISO8601()))'),
-          qref(`$context.args.input.put("__typename", "${type}")`),
+          comment('Prevent updating createdAt'),
+          iff(
+            raw('!$util.isNull($context.args.input.createdAt)'),
+            compoundExpression([
+              qref('$condition.put("expression", "($condition.expression) AND createdAt=:createdAt")'),
+              qref('$condition.expressionValues.put(":createdAt", {"S": "$context.args.input.createdAt"})'),
+            ])
+          ),
           comment('Update condition if type is @versioned'),
           iff(
             ref(ResourceConstants.SNIPPETS.VersionedCondition),
