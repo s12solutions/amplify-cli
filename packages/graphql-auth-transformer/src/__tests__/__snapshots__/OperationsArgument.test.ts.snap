@@ -19,7 +19,7 @@ exports[`Test "create", "update", "delete" auth operations 3`] = `
   #set( $compoundAuthRuleCounts = {} )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\",\\"Dev\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
@@ -97,7 +97,7 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
   #set( $compoundAuthRuleCounts = $util.defaultIfNull($compoundAuthRuleCounts, {}) )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\",\\"Dev\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
@@ -356,7 +356,7 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
   #set( $compoundAuthRuleCounts = $util.defaultIfNull($compoundAuthRuleCounts, {}) )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\",\\"Dev\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
@@ -542,7 +542,7 @@ exports[`Test that checks subscription resolvers are generated with auth logic 1
 #if( $authMode == \\"userPools\\" )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
@@ -557,7 +557,7 @@ exports[`Test that checks subscription resolvers are generated with auth logic 1
 
   ## [Start] Owner Authorization Checks **
   #set( $isOwnerAuthorized = false )
-  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\" } **
+  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\"} **
   #set( $allowedOwners0 = $util.defaultIfNull($ctx.args.owner, null) )
   #set( $identityValue = $util.defaultIfNull($ctx.identity.claims.get(\\"username\\"),
                         $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:username\\"), \\"___xamznone____\\")) )
@@ -597,7 +597,7 @@ exports[`Test that checks subscription resolvers are generated with auth logic 2
 #if( $authMode == \\"userPools\\" )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
@@ -612,7 +612,7 @@ exports[`Test that checks subscription resolvers are generated with auth logic 2
 
   ## [Start] Owner Authorization Checks **
   #set( $isOwnerAuthorized = false )
-  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\" } **
+  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\"} **
   #set( $allowedOwners0 = $util.defaultIfNull($ctx.args.owner, null) )
   #set( $identityValue = $util.defaultIfNull($ctx.identity.claims.get(\\"username\\"),
                         $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:username\\"), \\"___xamznone____\\")) )
@@ -652,7 +652,7 @@ exports[`Test that checks subscription resolvers are generated with auth logic 3
 #if( $authMode == \\"userPools\\" )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
@@ -667,7 +667,7 @@ exports[`Test that checks subscription resolvers are generated with auth logic 3
 
   ## [Start] Owner Authorization Checks **
   #set( $isOwnerAuthorized = false )
-  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\" } **
+  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\"} **
   #set( $allowedOwners0 = $util.defaultIfNull($ctx.args.owner, null) )
   #set( $identityValue = $util.defaultIfNull($ctx.identity.claims.get(\\"username\\"),
                         $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:username\\"), \\"___xamznone____\\")) )
@@ -716,7 +716,7 @@ exports[`Test that operation overwrites queries in auth operations 3`] = `
   #set( $compoundAuthRuleCounts = {} )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\",\\"Dev\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
@@ -794,7 +794,7 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
   #set( $compoundAuthRuleCounts = $util.defaultIfNull($compoundAuthRuleCounts, {}) )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\",\\"Dev\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
@@ -1053,7 +1053,7 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
   #set( $compoundAuthRuleCounts = $util.defaultIfNull($compoundAuthRuleCounts, {}) )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\",\\"Dev\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\", \\"Dev\\"] )
@@ -1233,7 +1233,7 @@ exports[`Test that subscriptions are only generated if the respective mutation o
 #if( $authMode == \\"userPools\\" )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Moderator\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Moderator\\"] )
@@ -1248,7 +1248,7 @@ exports[`Test that subscriptions are only generated if the respective mutation o
 
   ## [Start] Owner Authorization Checks **
   #set( $isOwnerAuthorized = false )
-  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\" } **
+  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\"} **
   #set( $allowedOwners0 = $util.defaultIfNull($ctx.args.owner, null) )
   #set( $identityValue = $util.defaultIfNull($ctx.identity.claims.get(\\"username\\"),
                         $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:username\\"), \\"___xamznone____\\")) )
@@ -1291,7 +1291,7 @@ exports[`Test that subscriptions are only generated if the respective mutation o
 
   ## [Start] Owner Authorization Checks **
   #set( $isOwnerAuthorized = false )
-  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\" } **
+  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\"} **
   #set( $allowedOwners0 = $util.defaultIfNull($ctx.args.owner, null) )
   #set( $identityValue = $util.defaultIfNull($ctx.identity.claims.get(\\"username\\"),
                         $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:username\\"), \\"___xamznone____\\")) )

@@ -324,6 +324,26 @@ export class ResourceFactory {
    * @param variableToCheck The name of the value containing the input.
    * @param variableToSet The name of the variable to set when auth is satisfied.
    */
+  public dynamicGroupAuthorizationExpressionForCreateOperations(
+    rules: AuthRule[],
+    variableToCheck: string = 'ctx.args.input',
+    variableToSet: string = ResourceConstants.SNIPPETS.IsDynamicGroupAuthorizedVariable
+  ): Expression {
+    if (!rules || rules.length === 0) {
+      return comment(`No Dynamic Group Authorization Rules`);
+    }
+    return block('Dynamic Group Authorization Checks', [
+      this.dynamicAuthorizationExpressionForCreate(rules, variableToCheck, variableToSet),
+    ]);
+  }
+
+  /**
+   * Given a set of dynamic group authorization rules verifies that input
+   * value satisfies at least one dynamic group authorization rule.
+   * @param rules The list of authorization rules.
+   * @param variableToCheck The name of the value containing the input.
+   * @param variableToSet The name of the variable to set when auth is satisfied.
+   */
   public dynamicGroupAuthorizationExpressionForCreateOperationsByField(
     rules: AuthRule[],
     fieldToCheck: string,
@@ -436,6 +456,7 @@ groupsField: "${rule.groupsField || DEFAULT_GROUPS_FIELD}", groupClaim: "${rule.
     let ruleNumber = 0;
     for (const rule of rules) {
       const ownerAttribute = rule.ownerField || DEFAULT_OWNER_FIELD;
+      const compoundAttribute = rule.and ? ', and: "' + rule.and + '"' : '';
       const rawUsername = rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_FIELD;
       const isUser = isUsername(rawUsername);
       const identityAttribute = replaceIfUsername(rawUsername);
@@ -444,9 +465,7 @@ groupsField: "${rule.groupsField || DEFAULT_GROUPS_FIELD}", groupClaim: "${rule.
         formatComment
           ? comment(formatComment(rule))
           : comment(
-              `Authorization rule: { allow: ${rule.allow}, ownerField: "${ownerAttribute}", identityClaim: "${identityAttribute}" ${
-                rule.and ? ', and: "' + rule.and + '"' : ''
-              }}`
+              `Authorization rule: { allow: ${rule.allow}, ownerField: "${ownerAttribute}", identityClaim: "${identityAttribute}"${compoundAttribute}}`
             ),
         set(ref(allowedOwnersVariable), raw(`$util.defaultIfNull($${variableToCheck}.${ownerAttribute}, null)`)),
         isUser
@@ -506,7 +525,7 @@ groupsField: "${rule.groupsField || DEFAULT_GROUPS_FIELD}", groupClaim: "${rule.
         variableToSet,
         rule => `Authorization rule: { allow: ${rule.allow}, \
 ownerField: "${rule.ownerField || DEFAULT_OWNER_FIELD}", \
-identityClaim: "${rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_FIELD}" \
+identityClaim: "${rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_FIELD}"\
 ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
       ),
     ]);
@@ -523,6 +542,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
     let ruleNumber = 0;
     for (const rule of rules) {
       const ownerAttribute = rule.ownerField || DEFAULT_OWNER_FIELD;
+      const compoundAttribute = rule.and ? ', and: "' + rule.and + '"' : '';
       const rawUsername = rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_FIELD;
       const isUser = isUsername(rawUsername);
       const identityAttribute = replaceIfUsername(rawUsername);
@@ -532,9 +552,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
         formatComment
           ? comment(formatComment(rule))
           : comment(
-              `Authorization rule: { allow: ${rule.allow}, ownerField: "${ownerAttribute}", identityClaim: "${identityAttribute}"  ${
-                rule.and ? ', and: "' + rule.and + '"' : ''
-              } }`
+              `Authorization rule: { allow: ${rule.allow}, ownerField: "${ownerAttribute}", identityClaim: "${identityAttribute}"${compoundAttribute} }`
             ),
         set(ref(allowedOwnersVariable), raw(`$util.defaultIfNull($${variableToCheck}.${ownerAttribute}, null)`)),
         isUser
@@ -713,7 +731,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
         comment(
           `Authorization rule${fieldMention}: { allow: ${
             rule.allow
-          }, ownerField: "${ownerAttribute}", identityClaim: "${identityAttribute}" ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
+          }, ownerField: "${ownerAttribute}", identityClaim: "${identityAttribute}"${rule.and ? ', and: "' + rule.and + '"' : ''} }`
         )
       );
       if (ownerFieldIsList) {
@@ -851,15 +869,14 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
     let ruleNumber = 0;
     for (const rule of rules) {
       const ownerAttribute = rule.ownerField || DEFAULT_OWNER_FIELD;
+      const compoundAttribute = rule.and ? ', and: "' + rule.and + '"' : '';
       const rawUsername = rule.identityField || rule.identityClaim || DEFAULT_IDENTITY_FIELD;
       const isUser = isUsername(rawUsername);
       const identityAttribute = replaceIfUsername(rawUsername);
       const allowedOwnersVariable = `allowedOwners${ruleNumber}`;
       ownerAuthorizationExpressions = ownerAuthorizationExpressions.concat(
         comment(
-          `Authorization rule: { allow: ${rule.allow}, ownerField: "${ownerAttribute}", identityClaim: "${identityAttribute}"  ${
-            rule.and ? ', and: "' + rule.and + '"' : ''
-          } }`
+          `Authorization rule: { allow: ${rule.allow}, ownerField: "${ownerAttribute}", identityClaim: "${identityAttribute}"${compoundAttribute} }`
         ),
         set(ref(allowedOwnersVariable), ref(`${variableToCheck}.${ownerAttribute}`)),
         isUser

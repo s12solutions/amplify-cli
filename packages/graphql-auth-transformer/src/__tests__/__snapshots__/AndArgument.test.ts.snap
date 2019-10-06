@@ -11,7 +11,7 @@ exports[`Test "and" parameter forces all rules to pass for read 1`] = `
   #set( $compoundAuthRuleCounts = {} )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Dev\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Dev\\"] )
@@ -55,7 +55,7 @@ exports[`Test "and" parameter forces all rules to pass for read 1`] = `
 
   ## [Start] Owner Authorization Checks **
   #set( $isOwnerAuthorized = $util.defaultIfNull($isOwnerAuthorized, false) )
-  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\"  , and: \\"testing\\" } **
+  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\", and: \\"testing\\" } **
   #set( $allowedOwners0 = $ctx.result.owner )
   #set( $identityValue = $util.defaultIfNull($ctx.identity.claims.get(\\"username\\"), $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:username\\"), \\"___xamznone____\\")) )
   #if( $util.isList($allowedOwners0) )
@@ -81,7 +81,7 @@ exports[`Test "and" parameter forces all rules to pass for read 1`] = `
 #end
 ## [End] Check authMode and execute owner/group checks **
 
-$util.toJson($context.result)"
+$util.toJson($ctx.result)"
 `;
 
 exports[`Test "and" parameter forces all rules to pass for read 2`] = `
@@ -95,7 +95,7 @@ exports[`Test "and" parameter forces all rules to pass for read 2`] = `
   #set( $compoundAuthRuleCounts = {} )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Dev\\"], groupClaim: \\"cognito:groups\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Dev\\"] )
@@ -121,7 +121,7 @@ exports[`Test "and" parameter forces all rules to pass for read 2`] = `
   #if( true )
     #set( $items = [] )
     #foreach( $item in $ctx.result.items )
-      #set( $staticCompoundAuthRuleCounts = $compoundAuthRuleCounts )
+      #set( $staticCompoundAuthRuleCounts = $util.parseJson($util.toJson($compoundAuthRuleCounts)) )
       ## [Start] Dynamic Group Authorization Checks **
       #set( $isLocalDynamicGroupAuthorized = false )
       ## Authorization rule: { allow: groups, groupsField: \\"groupField\\", groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
@@ -144,7 +144,7 @@ exports[`Test "and" parameter forces all rules to pass for read 2`] = `
 
       ## [Start] Owner Authorization Checks **
       #set( $isLocalOwnerAuthorized = false )
-      ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\"  , and: \\"testing\\" } **
+      ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\", and: \\"testing\\" } **
       #set( $allowedOwners0 = $item.owner )
       #set( $identityValue = $util.defaultIfNull($ctx.identity.claims.get(\\"username\\"), $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:username\\"), \\"___xamznone____\\")) )
       #if( $util.isList($allowedOwners0) )
@@ -186,7 +186,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
   #set( $compoundAuthRuleCounts = {} )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
@@ -230,7 +230,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 #end
 ## [End] Check authMode and execute owner/group checks **
 
-$util.toJson($context.result)"
+$util.toJson($ctx.result)"
 `;
 
 exports[`Test "create", "update", "delete" auth operations with "and" parameter forces all rules to pass 2`] = `
@@ -244,7 +244,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
   #set( $compoundAuthRuleCounts = {} )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
@@ -261,7 +261,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
   #if( true )
     #set( $items = [] )
     #foreach( $item in $ctx.result.items )
-      #set( $staticCompoundAuthRuleCounts = $compoundAuthRuleCounts )
+      #set( $staticCompoundAuthRuleCounts = $util.parseJson($util.toJson($compoundAuthRuleCounts)) )
       ## [Start] Dynamic Group Authorization Checks **
       #set( $isLocalDynamicGroupAuthorized = false )
       ## Authorization rule: { allow: groups, groupsField: \\"groupField\\", groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
@@ -313,7 +313,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
   #set( $compoundAuthRuleCounts = {} )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
@@ -356,7 +356,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 
   ## [Start] Owner Authorization Checks **
   #set( $isOwnerAuthorized = false )
-  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\"  , and: \\"testing2\\" } **
+  ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\", and: \\"testing2\\" } **
   #set( $allowedOwners0 = $util.defaultIfNull($ctx.args.input.owner, null) )
   #set( $identityValue = $util.defaultIfNull($ctx.identity.claims.get(\\"username\\"), $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:username\\"), \\"___xamznone____\\")) )
   #if( $util.isList($allowedOwners0) )
@@ -390,6 +390,25 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
 $util.qr($context.args.input.put(\\"createdAt\\", $util.defaultIfNull($ctx.args.input.createdAt, $util.time.nowISO8601())))
 $util.qr($context.args.input.put(\\"updatedAt\\", $util.defaultIfNull($ctx.args.input.updatedAt, $util.time.nowISO8601())))
 $util.qr($context.args.input.put(\\"__typename\\", \\"Post\\"))
+#set( $condition = {
+  \\"expression\\": \\"attribute_not_exists(#id)\\",
+  \\"expressionNames\\": {
+      \\"#id\\": \\"id\\"
+  }
+} )
+#if( $context.args.condition )
+  #set( $condition.expressionValues = {} )
+  #set( $conditionFilterExpressions = $util.parseJson($util.transform.toDynamoDBConditionExpression($context.args.condition)) )
+  $util.qr($condition.put(\\"expression\\", \\"($condition.expression) AND $conditionFilterExpressions.expression\\"))
+  $util.qr($condition.expressionNames.putAll($conditionFilterExpressions.expressionNames))
+  $util.qr($condition.expressionValues.putAll($conditionFilterExpressions.expressionValues))
+#end
+#if( $condition.expressionValues && $condition.expressionValues.size() == 0 )
+  #set( $condition = {
+  \\"expression\\": $condition.expression,
+  \\"expressionNames\\": $condition.expressionNames
+} )
+#end
 {
   \\"version\\": \\"2017-02-28\\",
   \\"operation\\": \\"PutItem\\",
@@ -397,12 +416,7 @@ $util.qr($context.args.input.put(\\"__typename\\", \\"Post\\"))
   \\"id\\":   $util.dynamodb.toDynamoDBJson($util.defaultIfNullOrBlank($ctx.args.input.id, $util.autoId()))
 } #end,
   \\"attributeValues\\": $util.dynamodb.toMapValuesJson($context.args.input),
-  \\"condition\\": {
-      \\"expression\\": \\"attribute_not_exists(#id)\\",
-      \\"expressionNames\\": {
-          \\"#id\\": \\"id\\"
-    }
-  }
+  \\"condition\\": $util.toJson($condition)
 }
 ## [End] Prepare DynamoDB PutItem Request. **"
 `;
@@ -423,7 +437,7 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
   #set( $compoundAuthRuleCounts = $util.defaultIfNull($compoundAuthRuleCounts, {}) )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
@@ -476,7 +490,7 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
     #set( $compoundAuthExpressions.testing2 = $util.defaultIfNull(compoundAuthExpressions.testing2, []) )
     #set( $ownerAuthExpressionValues = {} )
     #set( $ownerAuthExpressionNames = {} )
-    ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\"  , and: \\"testing2\\" } **
+    ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\", and: \\"testing2\\" } **
     #if( $compoundAuthRuleCounts.testing2 == 1 )
       $util.qr($compoundAuthExpressions.testing2.add(\\"#owner0 = :identity0\\"))
     #end
@@ -619,6 +633,18 @@ $util.qr($context.args.input.put(\\"__typename\\", \\"Post\\"))
   $util.qr($condition.expressionNames.putAll($versionedCondition.expressionNames))
   $util.qr($condition.expressionValues.putAll($versionedCondition.expressionValues))
 #end
+#if( $context.args.condition )
+  #set( $conditionFilterExpressions = $util.parseJson($util.transform.toDynamoDBConditionExpression($context.args.condition)) )
+  $util.qr($condition.put(\\"expression\\", \\"($condition.expression) AND $conditionFilterExpressions.expression\\"))
+  $util.qr($condition.expressionNames.putAll($conditionFilterExpressions.expressionNames))
+  $util.qr($condition.expressionValues.putAll($conditionFilterExpressions.expressionValues))
+#end
+#if( $condition.expressionValues && $condition.expressionValues.size() == 0 )
+  #set( $condition = {
+  \\"expression\\": $condition.expression,
+  \\"expressionNames\\": $condition.expressionNames
+} )
+#end
 #set( $expNames = {} )
 #set( $expValues = {} )
 #set( $expSet = {} )
@@ -712,7 +738,7 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
   #set( $compoundAuthRuleCounts = $util.defaultIfNull($compoundAuthRuleCounts, {}) )
   ## [Start] Static Group Authorization Checks **
   #set($isStaticGroupAuthorized = $util.defaultIfNull(
-            $isStaticGroupAuthorized, false))
+        $isStaticGroupAuthorized, false))
   ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
   #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
   #set( $allowedGroups = [\\"Admin\\"] )
@@ -765,7 +791,7 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
     #set( $compoundAuthExpressions.testing2 = $util.defaultIfNull(compoundAuthExpressions.testing2, []) )
     #set( $ownerAuthExpressionValues = {} )
     #set( $ownerAuthExpressionNames = {} )
-    ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\"  , and: \\"testing2\\" } **
+    ## Authorization rule: { allow: owner, ownerField: \\"owner\\", identityClaim: \\"cognito:username\\", and: \\"testing2\\" } **
     #if( $compoundAuthRuleCounts.testing2 == 1 )
       $util.qr($compoundAuthExpressions.testing2.add(\\"#owner0 = :identity0\\"))
     #end
@@ -899,6 +925,21 @@ $util.qr($context.args.input.put(\\"updatedBy\\", $util.defaultIfNull($ctx.ident
   $util.qr($expressionValues.putAll($versionedCondition.expressionValues))
   #set( $condition.expressionValues = $expressionValues )
 #end
+#if( $context.args.condition )
+  #set( $conditionFilterExpressions = $util.parseJson($util.transform.toDynamoDBConditionExpression($context.args.condition)) )
+  $util.qr($condition.put(\\"expression\\", \\"($condition.expression) AND $conditionFilterExpressions.expression\\"))
+  $util.qr($condition.expressionNames.putAll($conditionFilterExpressions.expressionNames))
+  #set( $conditionExpressionValues = $util.defaultIfNull($condition.expressionValues, {}) )
+  $util.qr($conditionExpressionValues.putAll($conditionFilterExpressions.expressionValues))
+  #set( $condition.expressionValues = $conditionExpressionValues )
+  $util.qr($condition.expressionValues.putAll($conditionFilterExpressions.expressionValues))
+#end
+#if( $condition.expressionValues && $condition.expressionValues.size() == 0 )
+  #set( $condition = {
+  \\"expression\\": $condition.expression,
+  \\"expressionNames\\": $condition.expressionNames
+} )
+#end
 {
   \\"version\\": \\"2017-02-28\\",
   \\"operation\\": \\"DeleteItem\\",
@@ -921,7 +962,7 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
     #set( $compoundAuthRuleCounts = $util.defaultIfNull($compoundAuthRuleCounts, {}) )
     ## [Start] Static Group Authorization Checks **
     #set($protectedByC_isStaticGroupAuthorized = $util.defaultIfNull(
-            $protectedByC_isStaticGroupAuthorized, false))
+        $protectedByC_isStaticGroupAuthorized, false))
     ## Authorization rule: { allow: groups, groups: [\\"Admin\\"], groupClaim: \\"cognito:groups\\", and: \\"cRule\\" } **
     #set( $userGroups = $util.defaultIfNull($ctx.identity.claims.get(\\"cognito:groups\\"), []) )
     #set( $allowedGroups = [\\"Admin\\"] )
@@ -1050,7 +1091,7 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
       #set( $compoundAuthExpressions.aRule = $util.defaultIfNull(compoundAuthExpressions.aRule, []) )
       #set( $ownerAuthExpressionValues = {} )
       #set( $ownerAuthExpressionNames = {} )
-      ## Authorization rule for field \\"protectedByA\\": { allow: owner, ownerField: \\"id\\", identityClaim: \\"cognito:username\\"  , and: \\"aRule\\" } **
+      ## Authorization rule for field \\"protectedByA\\": { allow: owner, ownerField: \\"id\\", identityClaim: \\"cognito:username\\", and: \\"aRule\\" } **
       #if( true )
         $util.qr($compoundAuthExpressions.aRule.add(\\"#protectedByA_owner0 = :protectedByA_identity0\\"))
       #end
@@ -1168,7 +1209,7 @@ exports[`Test "update" auth operations with "and" parameter on fields prevents s
       #set( $compoundAuthExpressions.bRule = $util.defaultIfNull(compoundAuthExpressions.bRule, []) )
       #set( $ownerAuthExpressionValues = {} )
       #set( $ownerAuthExpressionNames = {} )
-      ## Authorization rule for field \\"protectedByB\\": { allow: owner, ownerField: \\"id\\", identityClaim: \\"cognito:username\\"  , and: \\"bRule\\" } **
+      ## Authorization rule for field \\"protectedByB\\": { allow: owner, ownerField: \\"id\\", identityClaim: \\"cognito:username\\", and: \\"bRule\\" } **
       #if( true )
         $util.qr($compoundAuthExpressions.bRule.add(\\"#protectedByB_owner0 = :protectedByB_identity0\\"))
       #end
@@ -1311,6 +1352,18 @@ $util.qr($context.args.input.put(\\"__typename\\", \\"Post\\"))
   $util.qr($condition.put(\\"expression\\", \\"($condition.expression) AND $versionedCondition.expression\\"))
   $util.qr($condition.expressionNames.putAll($versionedCondition.expressionNames))
   $util.qr($condition.expressionValues.putAll($versionedCondition.expressionValues))
+#end
+#if( $context.args.condition )
+  #set( $conditionFilterExpressions = $util.parseJson($util.transform.toDynamoDBConditionExpression($context.args.condition)) )
+  $util.qr($condition.put(\\"expression\\", \\"($condition.expression) AND $conditionFilterExpressions.expression\\"))
+  $util.qr($condition.expressionNames.putAll($conditionFilterExpressions.expressionNames))
+  $util.qr($condition.expressionValues.putAll($conditionFilterExpressions.expressionValues))
+#end
+#if( $condition.expressionValues && $condition.expressionValues.size() == 0 )
+  #set( $condition = {
+  \\"expression\\": $condition.expression,
+  \\"expressionNames\\": $condition.expressionNames
+} )
 #end
 #set( $expNames = {} )
 #set( $expValues = {} )

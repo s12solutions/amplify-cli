@@ -202,6 +202,9 @@ export class ModelAuthTransformer extends Transformer {
           # Specifies a static list of groups that should have access to the object.
           groups: [String]
 
+          # Connection to other auth rules with matching string. All rules with the same name must be true.
+          and: String
+
           # Specifies operations to which this auth rule should be applied.
           operations: [ModelOperation]
 
@@ -533,7 +536,7 @@ Static group authorization should perform as expected.`
     // add logic here to only use static group rules
     const staticGroupAuthorizationRules = this.getStaticGroupRules(staticGroupRules);
     const staticGroupAuthorizationExpression = this.resources.staticGroupAuthorizationExpression(staticGroupAuthorizationRules, field);
-    const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(field);
+    const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(staticGroupAuthorizationRules, field);
     const authCheckExpressions = [staticGroupAuthorizationExpression, newline(), throwIfUnauthorizedExpression];
     const templateParts = [print(compoundExpression(authCheckExpressions))];
     // if the field resolver does not exist create it
@@ -725,7 +728,7 @@ Either make the field optional, set auth on the object and not the field, or dis
           fieldIsList
         );
 
-        const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(field, rules);
+        const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(rules, field);
 
         // Populate a list of configured authentication providers based on the rules
         const authModesToCheck = new Set<AuthProvider>();
@@ -763,7 +766,6 @@ Either make the field optional, set auth on the object and not the field, or dis
         // Create the authMode if block and add it to the resolver
         expressions.push(this.resources.getAuthModeCheckWrappedExpression(authModesToCheck, compoundExpression(authCheckExpressions)));
 
-<<<<<<< HEAD
         const templateParts = [
           print(iff(raw(`$ctx.args.input.containsKey("${field.name.value}")`), compoundExpression(expressions))),
           createResolverResource.Properties.RequestMappingTemplate,
@@ -771,92 +773,6 @@ Either make the field optional, set auth on the object and not the field, or dis
         createResolverResource.Properties.RequestMappingTemplate = templateParts.join('\n\n');
         ctx.setResource(resolverResourceId, createResolverResource);
       }
-=======
-            // Break the rules out by strategy.
-            const staticGroupAuthorizationRules = this.getStaticGroupRules(rules)
-            const dynamicGroupAuthorizationRules = this.getDynamicGroupRules(rules)
-            const ownerAuthorizationRules = this.getOwnerRules(rules)
-
-            if (staticGroupAuthorizationRules.length > 0 ||
-                dynamicGroupAuthorizationRules.length > 0 ||
-                ownerAuthorizationRules.length > 0) {
-
-                // Generate the expressions to validate each strategy.
-                const staticGroupAuthorizationExpression = this.resources.staticGroupAuthorizationExpression(
-                    staticGroupAuthorizationRules,
-                    field)
-
-                // In create mutations, the dynamic group and ownership authorization checks
-                // are done before calling PutItem.
-                const dynamicGroupAuthorizationExpression = this.resources.dynamicGroupAuthorizationExpressionForCreateOperationsByField(
-                    dynamicGroupAuthorizationRules,
-                    field.name.value
-                )
-                const fieldIsList = (fieldName: string) => {
-                    const field = parent.fields.find(field => field.name.value === fieldName);
-                    if (field) {
-                        return isListType(field.type);
-                    }
-                    return false;
-                }
-                const ownerAuthorizationExpression = this.resources.ownerAuthorizationExpressionForCreateOperationsByField(
-                    ownerAuthorizationRules,
-                    field.name.value,
-                    fieldIsList
-                )
-
-                const throwIfUnauthorizedExpression = this.resources.throwIfUnauthorized(rules, field)
-
-                // Populate a list of configured authentication providers based on the rules
-                const authModesToCheck = new Set<AuthProvider>();
-                const expressions: Array<Expression> = new Array();
-
-                if (ownerAuthorizationRules.find((r) => r.provider === 'userPools') ||
-                    staticGroupAuthorizationRules.length > 0 ||
-                    dynamicGroupAuthorizationRules.length > 0) {
-                    authModesToCheck.add('userPools');
-                }
-                if (ownerAuthorizationRules.find((r) => r.provider === 'oidc')) {
-                    authModesToCheck.add('oidc');
-                }
-
-                // If we've any modes to check, then add the authMode check code block
-                // to the start of the resolver.
-                if (authModesToCheck.size > 0) {
-                    expressions.push (this.resources.getAuthModeDeterminationExpression(authModesToCheck));
-                }
-
-                // These statements will be wrapped into an authMode check if statement
-                const authCheckExpressions = [
-                    staticGroupAuthorizationExpression,
-                    newline(),
-                    dynamicGroupAuthorizationExpression,
-                    newline(),
-                    ownerAuthorizationExpression,
-                    newline(),
-                    throwIfUnauthorizedExpression
-                ];
-
-                // Create the authMode if block and add it to the resolver
-                expressions.push(
-                    this.resources.getAuthModeCheckWrappedExpression(
-                        authModesToCheck,
-                        compoundExpression(authCheckExpressions))
-                );
-
-                const templateParts = [
-                    print(
-                        iff(
-                            raw(`$ctx.args.input.containsKey("${field.name.value}")`),
-                            compoundExpression(expressions)
-                        )
-                    ),
-                    createResolverResource.Properties.RequestMappingTemplate
-                ]
-                createResolverResource.Properties.RequestMappingTemplate = templateParts.join('\n\n')
-                ctx.setResource(resolverResourceId, createResolverResource)
-            }
->>>>>>> merge updates
 
       // if subscriptions is enabled the operation is specified in the mutation response resolver
       if (modelConfiguration.shouldHave('onCreate') && (modelConfiguration.getName('level') as ModelSubscriptionLevel) === 'on') {
@@ -1242,6 +1158,10 @@ All @auth directives used on field definitions are performed when the field is r
         compoundExpression([
           set(ref('items'), list([])),
           forEach(ref('item'), ref(itemList), [
+            set(
+              ref(ResourceConstants.SNIPPETS.StaticCompoundAuthRuleCounts),
+              raw(`$util.parseJson($util.toJson($${ResourceConstants.SNIPPETS.CompoundAuthRuleCounts}))`)
+            ),
             dynamicGroupAuthorizationExpression,
             newline(),
             ownerAuthorizationExpression,
@@ -1378,82 +1298,10 @@ All @auth directives used on field definitions are performed when the field is r
           authModesToCheck.add('oidc');
         }
 
-<<<<<<< HEAD
         if (authModesToCheck.size > 0) {
           const isUserPoolTheDefault = this.configuredAuthProviders.default === 'userPools';
           expressions.push(this.resources.getAuthModeDeterminationExpression(authModesToCheck, isUserPoolTheDefault));
         }
-=======
-    /**
-     * Returns a VTL expression that will authorize a list of results based on a set of auth rules.
-     * @param rules The auth rules.
-     */
-    private authorizationExpressionForListResult(rules: AuthRule[]) {
-        // Break the rules out by strategy.
-        const staticGroupAuthorizationRules = this.getStaticGroupRules(rules)
-        const dynamicGroupAuthorizationRules = this.getDynamicGroupRules(rules)
-        const ownerAuthorizationRules = this.getOwnerRules(rules)
-
-        if (staticGroupAuthorizationRules.length > 0 ||
-            dynamicGroupAuthorizationRules.length > 0 ||
-            ownerAuthorizationRules.length > 0) {
-
-            // Generate the expressions to validate each strategy.
-            const staticGroupAuthorizationExpression = this.resources.staticGroupAuthorizationExpression(staticGroupAuthorizationRules)
-
-            // In list queries, the dynamic group and ownership authorization checks
-            // occur on a per item basis. The helpers take the variable names
-            // as parameters to allow for this use case.
-            const dynamicGroupAuthorizationExpression = this.resources.dynamicGroupAuthorizationExpressionForReadOperations(
-                dynamicGroupAuthorizationRules,
-                'item',
-                ResourceConstants.SNIPPETS.IsLocalDynamicGroupAuthorizedVariable,
-                raw(`false`)
-            )
-            const ownerAuthorizationExpression = this.resources.ownerAuthorizationExpressionForReadOperations(
-                ownerAuthorizationRules,
-                'item',
-                ResourceConstants.SNIPPETS.IsLocalOwnerAuthorizedVariable,
-                raw(`false`)
-            )
-            const appendIfLocallyAuthorized = this.resources.appendItemIfLocallyAuthorized(rules)
-
-            const ifNotStaticallyAuthedFilterObjects = iff(
-                rules.some(r => r.and) 
-                ? raw('true')
-                : raw(`! $${ResourceConstants.SNIPPETS.IsStaticGroupAuthorizedVariable}`),
-                compoundExpression([
-                    set(ref('items'), list([])),
-                    forEach(
-                        ref('item'),
-                        ref('ctx.result.items'),
-                        [
-                            set(ref(ResourceConstants.SNIPPETS.StaticCompoundAuthRuleCounts), ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts)),
-                            dynamicGroupAuthorizationExpression,
-                            newline(),
-                            ownerAuthorizationExpression,
-                            newline(),
-                            appendIfLocallyAuthorized
-                        ]
-                    ),
-                    set(ref('ctx.result.items'), ref('items'))
-                ])
-            )
-
-            // If we've any modes to check, then add the authMode check code block
-            // to the start of the resolver.
-            const authModesToCheck = new Set<AuthProvider>();
-            const expressions: Array<Expression> = new Array();
-
-            if (ownerAuthorizationRules.find((r) => r.provider === 'userPools') ||
-                staticGroupAuthorizationRules.length > 0 ||
-                dynamicGroupAuthorizationRules.length > 0) {
-                authModesToCheck.add('userPools');
-            }
-            if (ownerAuthorizationRules.find((r) => r.provider === 'oidc')) {
-                authModesToCheck.add('oidc');
-            }
->>>>>>> merge updates
 
         // These statements will be wrapped into an authMode check if statement
         const authCheckExpressions = [
