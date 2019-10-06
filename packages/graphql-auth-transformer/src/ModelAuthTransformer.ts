@@ -1053,7 +1053,7 @@ All @auth directives used on field definitions are performed when the field is r
                         ref('item'),
                         ref('ctx.result.items'),
                         [
-                            set(ref(ResourceConstants.SNIPPETS.StaticCompoundAuthRuleCounts), ref(ResourceConstants.SNIPPETS.CompoundAuthRuleCounts)),
+                            set(ref(ResourceConstants.SNIPPETS.StaticCompoundAuthRuleCounts), raw(`$util.parseJson($util.toJson($${ResourceConstants.SNIPPETS.CompoundAuthRuleCounts}))`) ),
                             dynamicGroupAuthorizationExpression,
                             newline(),
                             ownerAuthorizationExpression,

@@ -121,7 +121,7 @@ exports[`Test "and" parameter forces all rules to pass for read 2`] = `
   #if( true )
     #set( $items = [] )
     #foreach( $item in $ctx.result.items )
-      #set( $staticCompoundAuthRuleCounts = $compoundAuthRuleCounts )
+      #set( $staticCompoundAuthRuleCounts = $util.parseJson($util.toJson($compoundAuthRuleCounts)) )
       ## [Start] Dynamic Group Authorization Checks **
       #set( $isLocalDynamicGroupAuthorized = false )
       ## Authorization rule: { allow: groups, groupsField: \\"groupField\\", groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
@@ -261,7 +261,7 @@ exports[`Test "create", "update", "delete" auth operations with "and" parameter 
   #if( true )
     #set( $items = [] )
     #foreach( $item in $ctx.result.items )
-      #set( $staticCompoundAuthRuleCounts = $compoundAuthRuleCounts )
+      #set( $staticCompoundAuthRuleCounts = $util.parseJson($util.toJson($compoundAuthRuleCounts)) )
       ## [Start] Dynamic Group Authorization Checks **
       #set( $isLocalDynamicGroupAuthorized = false )
       ## Authorization rule: { allow: groups, groupsField: \\"groupField\\", groupClaim: \\"cognito:groups\\", and: \\"testing\\" } **
