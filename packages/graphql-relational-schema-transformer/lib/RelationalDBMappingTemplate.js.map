@@ -1,0 +1,1 @@
+{"version":3,"file":"RelationalDBMappingTemplate.js","sourceRoot":"","sources":["../src/RelationalDBMappingTemplate.ts"],"names":[],"mappings":";;AAAA,uEAEkC;AAElC;;;GAGG;AACH,MAAqB,2BAA2B;IAE5C;;;;OAIG;IACI,MAAM,CAAC,QAAQ,CAAC,EAAC,UAAU,EAEjC;QACG,OAAO,8BAAG,CAAC;YACP,OAAO,EAAE,8BAAG,CAAC,YAAY,CAAC;YAC1B,UAAU,EAAE,UAAU;SACzB,CAAC,CAAA;IACN,CAAC;CACJ;AAfD,8CAeC"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"amplify.js","sourceRoot":"","sources":["../../commands/amplify.js"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,IAAM,YAAY,GAAG,OAAO,CAAC,yCAAyC,CAAC,CAAC;AAChE,IAAA,gFAAW,CAA4D;AAE/E,MAAM,CAAC,OAAO,GAAG;IACf,IAAI,EAAE,YAAY,CAAC,OAAO;IAC1B,GAAG,EAAE,UAAO,OAAO;;YACjB,WAAW,CAAC,OAAO,CAAC,CAAC;;;SACtB;CACF,CAAC"}

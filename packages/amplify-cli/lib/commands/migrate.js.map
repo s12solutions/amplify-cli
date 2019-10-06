@@ -1,0 +1,1 @@
+{"version":3,"file":"migrate.js","sourceRoot":"","sources":["../../commands/migrate.js"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAQ,IAAA,iEAAc,CAAuC;AAE7D,MAAM,CAAC,OAAO,GAAG;IACf,IAAI,EAAE,SAAS;IACf,GAAG,EAAE,UAAO,OAAO;;;wBACjB,qBAAM,cAAc,CAAC,OAAO,CAAC,EAAA;;oBAA7B,SAA6B,CAAC;;;;SAC/B;CACF,CAAC"}
