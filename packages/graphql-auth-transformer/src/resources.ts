@@ -648,37 +648,75 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
       const groupName = fieldBeingProtected ? `${fieldBeingProtected}_group${ruleNumber}` : `group${ruleNumber}`;
       const groupClaimAttribute = rule.groupClaim || DEFAULT_GROUP_CLAIM;
       const compoundAttribute = rule.and ? ', and: "' + rule.and + '"' : '';
+      const shouldAddCompoundAuthExpression =
+        rule.and && staticRules.some(sr => sr.and === rule.and)
+          ? equals(
+              raw(`$${ResourceConstants.SNIPPETS.CompoundAuthRuleCounts}.${rule.and}`),
+              int(staticRules.filter(sr => sr.and === rule.and).length)
+            )
+          : raw('true');
+
+      if (rule.and) {
+        groupAuthorizationExpressions = groupAuthorizationExpressions.concat(set(ref('groupCompoundAuthExpressionValues'), list([])));
+      }
       groupAuthorizationExpressions = groupAuthorizationExpressions.concat(
         comment(
           `Authorization rule${fieldMention}: { allow: ${rule.allow}, groupsField: "${groupsAttribute}", groupClaim: "${groupClaimAttribute}"${compoundAttribute}}`
         ),
         // Add the new auth expression and values
         this.setUserGroups(rule.groupClaim),
+
         forEach(ref('userGroup'), ref('userGroups'), [
           rule.and
-            ? // do not attempt server side validation for compound rules when a static rule part has failed authorisation
-              // (causes empty totalAuthExpression, which will short circuit attempted put operation)
-              iff(
-                staticRules.some(sr => sr.and === rule.and)
-                  ? equals(
-                      raw(`$${ResourceConstants.SNIPPETS.CompoundAuthRuleCounts}.${rule.and}`),
-                      int(staticRules.filter(sr => sr.and === rule.and).length)
-                    )
-                  : raw('true'),
-                raw(`$util.qr($compoundAuthExpressions.${rule.and}.add("contains(#${groupsAttributeName}, :${groupName}$foreach.count)"))`)
+            ? iff(
+                shouldAddCompoundAuthExpression,
+                raw(`$util.qr($groupCompoundAuthExpressionValues.add("contains(#${groupsAttributeName}, :${groupName}$foreach.count)"))`)
               )
             : raw(`$util.qr($groupAuthExpressions.add("contains(#${groupsAttributeName}, :${groupName}$foreach.count)"))`),
-          raw(`$util.qr($groupAuthExpressionValues.put(":${groupName}$foreach.count", { "S": $userGroup }))`),
+          iff(
+            shouldAddCompoundAuthExpression,
+            raw(`$util.qr($groupAuthExpressionValues.put(":${groupName}$foreach.count", { "S": $userGroup }))`)
+          ),
         ]),
-        iff(raw('$userGroups.size() > 0'), raw(`$util.qr($groupAuthExpressionNames.put("#${groupsAttributeName}", "${groupsAttribute}"))`))
+        iff(
+          and([raw('$userGroups.size() > 0'), shouldAddCompoundAuthExpression]),
+          raw(`$util.qr($groupAuthExpressionNames.put("#${groupsAttributeName}", "${groupsAttribute}"))`)
+        )
       );
+      if (rule.and) {
+        groupAuthorizationExpressions = groupAuthorizationExpressions.concat(
+          ifElse(
+            raw('$groupCompoundAuthExpressionValues.size() > 1'),
+            set(ref('groupCompoundAuthExpressionValuesCombined'), str('(')),
+            set(ref('groupCompoundAuthExpressionValuesCombined'), str(''))
+          ),
+          forEach(ref('groupCompoundAuthExpressionValue'), ref('groupCompoundAuthExpressionValues'), [
+            set(
+              ref('groupCompoundAuthExpressionValuesCombined'),
+              raw('"$groupCompoundAuthExpressionValuesCombined $groupCompoundAuthExpressionValue"')
+            ),
+            iff(
+              ref('foreach.hasNext'),
+              set(ref('groupCompoundAuthExpressionValuesCombined'), str(`$groupCompoundAuthExpressionValuesCombined OR`))
+            ),
+          ]),
+          iff(
+            raw('$groupCompoundAuthExpressionValues.size() > 1'),
+            set(ref('groupCompoundAuthExpressionValuesCombined'), str('$groupCompoundAuthExpressionValuesCombined )'))
+          ),
+          iff(
+            parens(raw('$groupCompoundAuthExpressionValuesCombined != ""')),
+            raw(`$util.qr($compoundAuthExpressions.${rule.and}.add($groupCompoundAuthExpressionValuesCombined))`)
+          )
+        );
+      }
       ruleNumber++;
     }
     // check for groupclaim here
     return block('Dynamic group authorization checks', [
       iff(not(ref('compoundAuthExpressions')), set(ref('compoundAuthExpressions'), obj({}))),
       ...this.compoundRuleNames(rules).map(r =>
-        set(ref(`compoundAuthExpressions.${r}`), raw(`$util.defaultIfNull(compoundAuthExpressions.${r}, [])`))
+        set(ref(`compoundAuthExpressions.${r}`), raw(`$util.defaultIfNull($compoundAuthExpressions.${r}, [])`))
       ),
       set(ref('groupAuthExpressions'), list([])),
       set(ref('groupAuthExpressionValues'), obj({})),
@@ -724,6 +762,13 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
       const ownerFieldIsList = fieldIsList(ownerAttribute);
       const ownerName = fieldBeingProtected ? `${fieldBeingProtected}_owner${ruleNumber}` : `owner${ruleNumber}`;
       const identityName = fieldBeingProtected ? `${fieldBeingProtected}_identity${ruleNumber}` : `identity${ruleNumber}`;
+      const shouldAddCompoundAuthExpression =
+        rule.and && staticRules.some(sr => sr.and === rule.and)
+          ? equals(
+              raw(`$${ResourceConstants.SNIPPETS.CompoundAuthRuleCounts}.${rule.and}`),
+              int(staticRules.filter(sr => sr.and === rule.and).length)
+            )
+          : raw('true');
 
       ownerAuthorizationExpressions.push(
         // tslint:disable:max-line-length
@@ -736,15 +781,8 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
       if (ownerFieldIsList) {
         ownerAuthorizationExpressions.push(
           rule.and
-            ? // do not attempt server side validation for compound rules when a static rule part has failed authorisation
-              // (causes empty totalAuthExpression, which will short circuit attempted put operation)
-              iff(
-                staticRules.some(sr => sr.and === rule.and)
-                  ? equals(
-                      raw(`$${ResourceConstants.SNIPPETS.CompoundAuthRuleCounts}.${rule.and}`),
-                      int(staticRules.filter(sr => sr.and === rule.and).length)
-                    )
-                  : raw('true'),
+            ? iff(
+                shouldAddCompoundAuthExpression,
                 raw(`$util.qr($compoundAuthExpressions.${rule.and}.add("contains(#${ownerName}, :${identityName})"))`)
               )
             : raw(`$util.qr($ownerAuthExpressions.add("contains(#${ownerName}, :${identityName})"))`)
@@ -752,15 +790,8 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
       } else {
         if (rule.and) {
           ownerAuthorizationExpressions.push(
-            // do not attempt server side validation for compound rules when a static rule part has failed authorisation
-            // (causes empty totalAuthExpression, which will short circuit attempted put operation)
             iff(
-              staticRules.some(sr => sr.and === rule.and)
-                ? equals(
-                    raw(`$${ResourceConstants.SNIPPETS.CompoundAuthRuleCounts}.${rule.and}`),
-                    int(staticRules.filter(sr => sr.and === rule.and).length)
-                  )
-                : raw('true'),
+              shouldAddCompoundAuthExpression,
               raw(`$util.qr($compoundAuthExpressions.${rule.and}.add("#${ownerName} = :${identityName}"))`)
             )
           );
@@ -769,16 +800,21 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
         }
       }
       ownerAuthorizationExpressions = ownerAuthorizationExpressions.concat(
-        raw(`$util.qr($ownerAuthExpressionNames.put("#${ownerName}", "${ownerAttribute}"))`),
-        // tslint:disable
-        isUser
-          ? raw(
-              `$util.qr($ownerAuthExpressionValues.put(":${identityName}", $util.dynamodb.toDynamoDB($util.defaultIfNull($ctx.identity.claims.get("${rawUsername}"), $util.defaultIfNull($ctx.identity.claims.get("${identityAttribute}"), "${NONE_VALUE}")))))`
-            )
-          : raw(
-              `$util.qr($ownerAuthExpressionValues.put(":${identityName}", $util.dynamodb.toDynamoDB($util.defaultIfNull($ctx.identity.claims.get("${identityAttribute}"), "${NONE_VALUE}"))))`
-            )
-        // tslint:enable
+        iff(
+          shouldAddCompoundAuthExpression,
+          compoundExpression([
+            raw(`$util.qr($ownerAuthExpressionNames.put("#${ownerName}", "${ownerAttribute}"))`),
+            // tslint:disable
+            isUser
+              ? raw(
+                  `$util.qr($ownerAuthExpressionValues.put(":${identityName}", $util.dynamodb.toDynamoDB($util.defaultIfNull($ctx.identity.claims.get("${rawUsername}"), $util.defaultIfNull($ctx.identity.claims.get("${identityAttribute}"), "${NONE_VALUE}")))))`
+                )
+              : raw(
+                  `$util.qr($ownerAuthExpressionValues.put(":${identityName}", $util.dynamodb.toDynamoDB($util.defaultIfNull($ctx.identity.claims.get("${identityAttribute}"), "${NONE_VALUE}"))))`
+                ),
+            // tslint:enable
+          ])
+        )
       );
       ruleNumber++;
     }
@@ -787,7 +823,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
       set(ref('ownerAuthExpressions'), list([])),
       iff(not(ref('compoundAuthExpressions')), set(ref('compoundAuthExpressions'), obj({}))),
       ...this.compoundRuleNames(rules).map(r =>
-        set(ref(`compoundAuthExpressions.${r}`), raw(`$util.defaultIfNull(compoundAuthExpressions.${r}, [])`))
+        set(ref(`compoundAuthExpressions.${r}`), raw(`$util.defaultIfNull($compoundAuthExpressions.${r}, [])`))
       ),
       set(ref('ownerAuthExpressionValues'), obj({})),
       set(ref('ownerAuthExpressionNames'), obj({})),
@@ -929,6 +965,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
     return block('Throw if unauthorized', [ifUnauthThrow]);
   }
 
+  // counts how many passing rules are found for each compound rule
   private incrementAuthRuleCounter(rule: AuthRule, variableToSet: string = ResourceConstants.SNIPPETS.CompoundAuthRuleCounts) {
     let path = `${variableToSet}.${rule.and}`;
     return set(ref(`${path}`), raw(`$util.defaultIfNull($${path}, 0) + 1`));
@@ -1006,7 +1043,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
         ref('groupAuthExpressions'),
         forEach(ref('authExpr'), ref('groupAuthExpressions'), [
           set(ref('totalAuthExpression'), str(`$totalAuthExpression $authExpr`)),
-          iff(ref('foreach.hasNext'), set(ref('totalAuthExpression'), str(`$totalAuthExpression OR`))),
+          iff(ref('foreach.hasNext'), set(ref('totalAuthExpression'), str(`$totalAuthExpression OR `))),
         ])
       ),
       iff(
@@ -1021,15 +1058,16 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
       comment('Add owner auth conditions if they exist'),
       iff(
         raw(`$totalAuthExpression != "" && $ownerAuthExpressions && $ownerAuthExpressions.size() > 0`),
-        set(ref('totalAuthExpression'), str(`$totalAuthExpression OR`))
+        set(ref('totalAuthExpression'), str(`$totalAuthExpression OR `))
       ),
       iff(
-        ref('ownerAuthExpressions'),
+        raw('$ownerAuthExpressions && $ownerAuthExpressions.size() > 0'),
         forEach(ref('authExpr'), ref('ownerAuthExpressions'), [
           set(ref('totalAuthExpression'), str(`$totalAuthExpression $authExpr`)),
-          iff(ref('foreach.hasNext'), set(ref('totalAuthExpression'), str(`$totalAuthExpression OR`))),
+          iff(ref('foreach.hasNext'), set(ref('totalAuthExpression'), str(`$totalAuthExpression OR `))),
         ])
       ),
+      iff(raw(`$totalAuthExpression != ""`), set(ref('totalAuthExpression'), str(`($totalAuthExpression)`))),
       iff(
         ref('ownerAuthExpressionNames'),
         raw(`$util.qr($${ResourceConstants.SNIPPETS.AuthCondition}.expressionNames.putAll($ownerAuthExpressionNames))`)
@@ -1041,21 +1079,32 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
       ),
       comment('Add compound auth conditions if they exist'),
       iff(
-        raw(`$totalAuthExpression != "" && $compoundAuthExpressions && $compoundAuthExpressions.entrySet().size() > 0`),
-        set(ref('totalAuthExpression'), str(`$totalAuthExpression OR`))
-      ),
-      iff(
-        ref('compoundAuthExpressions'),
+        ref('compoundAuthExpressions && $compoundAuthExpressions.entrySet().size() > 0'),
         forEach(ref('entry'), ref('compoundAuthExpressions.entrySet()'), [
           // entry values are lists
-          iff(raw('$entry.value && $entry.value.size() > 0'), set(ref('innerCompoundAuth'), str('('))),
+          // if there are multiple compound expressions, wrap them in parens and join together with OR statement
+          ifElse(
+            raw('$entry.value && $entry.value.size() > 1 && $compoundAuthExpressions.entrySet().size() > 1'),
+            set(ref('innerCompoundAuth'), str('(')),
+            set(ref('innerCompoundAuth'), str(''))
+          ),
+          // foreach compound expression (all 'and' properties), join together with AND statement
           forEach(ref('authExpr'), ref('entry.value'), [
+            qref('$ctx.stash.put("vvv$foreach.count", $authExpr)'),
             set(ref('innerCompoundAuth'), str(`$innerCompoundAuth $authExpr`)),
             iff(ref('foreach.hasNext'), set(ref('innerCompoundAuth'), str(`$innerCompoundAuth AND`))),
           ]),
-          iff(raw('$entry.value && $entry.value.size() > 0'), set(ref('innerCompoundAuth'), str('$innerCompoundAuth )'))),
-          set(ref('totalAuthExpression'), str(`$totalAuthExpression $innerCompoundAuth`)),
-          iff(ref('foreach.hasNext'), set(ref('totalAuthExpression'), str(`$totalAuthExpression OR`))),
+          iff(
+            raw('$entry.value && $entry.value.size() > 1 && $compoundAuthExpressions.entrySet().size() > 1'),
+            set(ref('innerCompoundAuth'), str('$innerCompoundAuth )'))
+          ),
+          iff(
+            raw('$innerCompoundAuth != "" && $totalAuthExpression != ""'),
+            set(ref('totalAuthExpression'), str(`$totalAuthExpression OR`))
+          ),
+          iff(raw('$innerCompoundAuth != ""'), set(ref('totalAuthExpression'), str(`$totalAuthExpression $innerCompoundAuth`))),
+          qref('$ctx.stash.put("uuu$foreach.count", $innerCompoundAuth)'),
+          qref('$ctx.stash.put("ttt$foreach.count", $totalAuthExpression)'),
         ])
       ),
       comment('Set final expression if it has changed.'),
@@ -1063,10 +1112,10 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
         raw(`$totalAuthExpression != ""`),
         ifElse(
           raw(`$util.isNullOrEmpty($${ResourceConstants.SNIPPETS.AuthCondition}.expression)`),
-          set(ref(`${ResourceConstants.SNIPPETS.AuthCondition}.expression`), str(`($totalAuthExpression)`)),
+          set(ref(`${ResourceConstants.SNIPPETS.AuthCondition}.expression`), str(`$totalAuthExpression`)),
           set(
             ref(`${ResourceConstants.SNIPPETS.AuthCondition}.expression`),
-            str(`$${ResourceConstants.SNIPPETS.AuthCondition}.expression AND ($totalAuthExpression)`)
+            str(`$${ResourceConstants.SNIPPETS.AuthCondition}.expression AND $totalAuthExpression`)
           )
         )
       ),

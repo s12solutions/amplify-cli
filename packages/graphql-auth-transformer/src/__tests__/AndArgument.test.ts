@@ -33,8 +33,6 @@ test('Test "and" parameter forces all rules to pass for read', () => {
   });
   const out = transformer.transform(validSchema);
   expect(out).toBeDefined();
-  expect(out.resolvers['Query.getComment.res.vtl']).toContain('Authorization rule:');
-  expect(out.resolvers['Query.listComments.res.vtl']).toContain('Authorization rule:');
   expect(out.resolvers['Query.getComment.res.vtl']).toContain('#set( $isStaticGroupAuthorized = true )');
   expect(out.resolvers['Query.getComment.res.vtl']).toContain('$util.defaultIfNull($compoundAuthRuleCounts.testing, 0) == 3');
   expect(out.resolvers['Query.listComments.res.vtl']).toContain('$util.defaultIfNull($staticCompoundAuthRuleCounts.testing, 0) == 3');
@@ -109,12 +107,15 @@ test('Test "create", "update", "delete" auth operations with "and" parameter for
 
 test('Test "update" auth operations with "and" parameter on fields prevents security bypass', () => {
   const validSchema = `
-    type Post @model {
+    type Post @model @auth(rules: [{allow: groups, groups: ["Admin"], operations: [create, read]}, {allow: groups, groups: ["Nobody"]}]) {
         id: ID!
-        
-        protectedByB: String! @auth(rules: [{allow: owner, ownerField: "id", operations: [update], and: "bRule"}])
-        protectedByA: String! @auth(rules: [{allow: owner, ownerField: "id", operations: [update], and: "aRule"}])
-        protectedByC: String! @auth(rules: [{allow: groups, groups: ["Admin"], operations: [update], and: "cRule"}])
+        unprotected: String!
+        protectedByStaticGroup: String! @auth(rules: [{allow: grpups, groups: ["Admin"], operations: [read, update]}])
+        protectedByDynamocGroup: String! @auth(rules: [{allow: groups, groupsField: "groupField", operations: [read, update]}])
+        protectedByOwner: String! @auth(rules: [{allow: owner, ownerField: "id", operations: [read, update]}])
+        protectedByB: String! @auth(rules: [{allow: owner, ownerField: "id", operations: [read, update], and: "bRule"}])
+        protectedByA: String! @auth(rules: [{allow: owner, ownerField: "id", operations: [read, update], and: "aRule"}])
+        protectedByC: String! @auth(rules: [{allow: groups, groups: ["Admin"], operations: [read, update], and: "cRule"}])
         groupField: String!
         createdAt: String
         updatedAt: String
@@ -136,4 +137,8 @@ test('Test "update" auth operations with "and" parameter on fields prevents secu
   const out = transformer.transform(validSchema);
   expect(out).toBeDefined();
   expect(out.resolvers['Mutation.updatePost.req.vtl']).toMatchSnapshot();
+  expect(out.resolvers['Mutation.getPost.res.vtl']).toMatchSnapshot();
+  expect(out.resolvers['Mutation.listPosts.res.vtl']).toMatchSnapshot();
+  expect(out.resolvers['Mutation.createPost.res.vtl']).toMatchSnapshot();
+  expect(out.resolvers['Mutation.deletePost.res.vtl']).toMatchSnapshot();
 });

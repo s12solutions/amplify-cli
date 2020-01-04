@@ -1161,7 +1161,7 @@ All @auth directives used on field definitions are performed when the field is r
           forEach(ref('item'), ref(itemList), [
             // split the vtl calculated auth rule counds from dynamo-checked counts so that we know how many
             // additional rules must be validated in dynamo
-            // PERF: this deep clones the counts by stringifying and parsing json, this is done in java with unknown perf.
+            // OPTIMIZE: this deep clones the counts by stringifying and parsing json, this is done in java with unknown perf.
             set(
               ref(ResourceConstants.SNIPPETS.StaticCompoundAuthRuleCounts),
               raw(`$util.parseJson($util.toJson($${ResourceConstants.SNIPPETS.CompoundAuthRuleCounts}))`)
@@ -1751,6 +1751,7 @@ All @auth directives used on field definitions are performed when the field is r
     } else {
       // Get the directives we need to add to the GraphQL nodes
       const includeDefault = parent !== null ? this.isTypeHasRulesForOperation(parent, mutationOperation) : false;
+      // TODO: READPOINT
       const directives = this.getDirectivesForRules(rules, includeDefault);
 
       if (directives.length > 0) {
@@ -1834,9 +1835,12 @@ All @auth directives used on field definitions are performed when the field is r
     ) as FieldDefinitionNode;
     const nameNode: any = makeNonNull ? makeNonNullType(makeNamedType('String')) : makeNamedType('String');
     // const createArguments = [makeInputValueDefinition(DEFAULT_OWNER_FIELD, nameNode)];
-    const ownerArgumentList = ownerRules.map(rule => {
-      return makeInputValueDefinition(rule.ownerField || DEFAULT_OWNER_FIELD, nameNode);
-    });
+    const ownerArgumentList = ownerRules
+      .map(r => r.ownerField)
+      .filter((ownerField, index, arr) => arr.indexOf(ownerField) === index)
+      .map(ownerField => {
+        return makeInputValueDefinition(ownerField || DEFAULT_OWNER_FIELD, nameNode);
+      });
     createField = {
       ...createField,
       arguments: ownerArgumentList,
