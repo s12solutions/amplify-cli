@@ -1011,7 +1011,7 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
         ref('groupAuthExpressions'),
         forEach(ref('authExpr'), ref('groupAuthExpressions'), [
           set(ref('totalAuthExpression'), str(`$totalAuthExpression $authExpr`)),
-          iff(ref('foreach.hasNext'), set(ref('totalAuthExpression'), str(`$totalAuthExpression OR `))),
+          iff(ref('foreach.hasNext'), set(ref('totalAuthExpression'), str(`$totalAuthExpression OR`))),
         ])
       ),
       iff(
@@ -1026,13 +1026,13 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
       comment('Add owner auth conditions if they exist'),
       iff(
         raw(`$totalAuthExpression != "" && $ownerAuthExpressions && $ownerAuthExpressions.size() > 0`),
-        set(ref('totalAuthExpression'), str(`$totalAuthExpression OR `))
+        set(ref('totalAuthExpression'), str(`$totalAuthExpression OR`))
       ),
       iff(
         raw('$ownerAuthExpressions && $ownerAuthExpressions.size() > 0'),
         forEach(ref('authExpr'), ref('ownerAuthExpressions'), [
           set(ref('totalAuthExpression'), str(`$totalAuthExpression $authExpr`)),
-          iff(ref('foreach.hasNext'), set(ref('totalAuthExpression'), str(`$totalAuthExpression OR `))),
+          iff(ref('foreach.hasNext'), set(ref('totalAuthExpression'), str(`$totalAuthExpression OR`))),
         ])
       ),
       iff(raw(`$totalAuthExpression != ""`), set(ref('totalAuthExpression'), str(`($totalAuthExpression)`))),
@@ -1058,7 +1058,6 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
           ),
           // foreach compound expression (all 'and' properties), join together with AND statement
           forEach(ref('authExpr'), ref('entry.value'), [
-            qref('$ctx.stash.put("vvv$foreach.count", $authExpr)'),
             set(ref('innerCompoundAuth'), str(`$innerCompoundAuth $authExpr`)),
             iff(ref('foreach.hasNext'), set(ref('innerCompoundAuth'), str(`$innerCompoundAuth AND`))),
           ]),
@@ -1071,8 +1070,6 @@ ${rule.and ? ', and: "' + rule.and + '"' : ''} }`
             set(ref('totalAuthExpression'), str(`$totalAuthExpression OR`))
           ),
           iff(raw('$innerCompoundAuth != ""'), set(ref('totalAuthExpression'), str(`$totalAuthExpression $innerCompoundAuth`))),
-          qref('$ctx.stash.put("uuu$foreach.count", $innerCompoundAuth)'),
-          qref('$ctx.stash.put("ttt$foreach.count", $totalAuthExpression)'),
         ])
       ),
       comment('Set final expression if it has changed.'),

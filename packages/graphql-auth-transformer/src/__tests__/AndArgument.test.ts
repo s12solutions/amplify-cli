@@ -87,7 +87,7 @@ test('Test "create", "update", "delete" auth operations with "and" parameter for
   );
   expect(out.resolvers['Mutation.updatePost.req.vtl'].replace(/ +?/g, '')).toContain(
     '#if($compoundAuthRuleCounts.testing==1)\n' +
-      '$util.qr($compoundAuthExpressions.testing.add("contains(#groupsAttribute0,:group0$foreach.count)"))\n' +
+      '$util.qr($groupCompoundAuthExpressionValues.add("contains(#groupsAttribute0,:group0$foreach.count)"))\n' +
       '#end'
   );
 
@@ -98,7 +98,7 @@ test('Test "create", "update", "delete" auth operations with "and" parameter for
   );
   expect(out.resolvers['Mutation.deletePost.req.vtl'].replace(/ +?/g, '')).toContain(
     '#if($compoundAuthRuleCounts.testing==1)\n' +
-      '$util.qr($compoundAuthExpressions.testing.add("contains(#groupsAttribute0,:group0$foreach.count)"))\n' +
+      '$util.qr($groupCompoundAuthExpressionValues.add("contains(#groupsAttribute0,:group0$foreach.count)"))\n' +
       '#end'
   );
 
@@ -110,12 +110,12 @@ test('Test "update" auth operations with "and" parameter on fields prevents secu
     type Post @model @auth(rules: [{allow: groups, groups: ["Admin"], operations: [create, read]}, {allow: groups, groups: ["Nobody"]}]) {
         id: ID!
         unprotected: String!
-        protectedByStaticGroup: String! @auth(rules: [{allow: grpups, groups: ["Admin"], operations: [read, update]}])
-        protectedByDynamocGroup: String! @auth(rules: [{allow: groups, groupsField: "groupField", operations: [read, update]}])
-        protectedByOwner: String! @auth(rules: [{allow: owner, ownerField: "id", operations: [read, update]}])
-        protectedByB: String! @auth(rules: [{allow: owner, ownerField: "id", operations: [read, update], and: "bRule"}])
-        protectedByA: String! @auth(rules: [{allow: owner, ownerField: "id", operations: [read, update], and: "aRule"}])
-        protectedByC: String! @auth(rules: [{allow: groups, groups: ["Admin"], operations: [read, update], and: "cRule"}])
+        protectedByStaticGroup: String @auth(rules: [{allow: groups, groups: ["Admin"], operations: [read, update]}])
+        protectedByDynamocGroup: String @auth(rules: [{allow: groups, groupsField: "groupField", operations: [read, update]}])
+        protectedByOwner: String @auth(rules: [{allow: owner, ownerField: "id", operations: [read, update]}])
+        protectedByB: String @auth(rules: [{allow: owner, ownerField: "id", operations: [read, update], and: "bRule"}])
+        protectedByA: String @auth(rules: [{allow: owner, ownerField: "id", operations: [read, update], and: "aRule"}])
+        protectedByC: String @auth(rules: [{allow: groups, groups: ["Admin"], operations: [read, update], and: "cRule"}])
         groupField: String!
         createdAt: String
         updatedAt: String
