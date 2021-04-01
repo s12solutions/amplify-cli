@@ -54,8 +54,11 @@ async function serviceWalkthrough(context, defaultValuesFilename, datasourceMeta
   // Secret Store Question
   const selectedSecretArn = await getSecretStoreArn(context, inputs, clusterResourceId, AWS);
 
+  // Serverless Type Question
+  const serverlessType = await getServerlessType(context, inputs);
+
   // Database Name Question
-  const selectedDatabase = await selectDatabase(context, inputs, selectedClusterArn, selectedSecretArn, AWS);
+  const selectedDatabase = await selectDatabase(context, inputs, selectedClusterArn, selectedSecretArn, AWS, serverlessType);
 
   return {
     region: selectedRegion,
@@ -94,6 +97,15 @@ async function selectCluster(context, inputs, AWS) {
   }
   context.print.error('No properly configured Aurora Serverless clusters found.');
   process.exit(0);
+}
+
+/**
+ *
+ * @param {*} inputs
+ */
+ async function getServerlessType(context, inputs) {
+  const options = ['postgres', 'mysql'];
+  return await promptWalkthroughQuestion(inputs, 1, options);
 }
 
 /**
@@ -156,13 +168,13 @@ async function getSecretStoreArn(context, inputs, clusterResourceId, AWS) {
  * @param {*} clusterArn
  * @param {*} secretArn
  */
-async function selectDatabase(context, inputs, clusterArn, secretArn, AWS) {
+async function selectDatabase(context, inputs, clusterArn, secretArn, AWS, serverlessType) {
   // Database Name Question
   const DataApi = new AWS.RDSDataService();
   const params = new DataApiParams();
   params.secretArn = secretArn;
   params.resourceArn = clusterArn;
-  params.sql = 'SHOW databases';
+  params.sql = serverlessType === 'postgres' ? 'SELECT datname FROM pg_database WHERE datistemplate = false;' : 'SHOW databases';
 
   spinner.start('Fetching Aurora Serverless cluster...');
   const dataApiResult = await DataApi.executeStatement(params).promise();
